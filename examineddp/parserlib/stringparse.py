@@ -5,17 +5,17 @@ import warnings
 
 from examineddp.parserlib import urldetectionregex 
 
-
 import logging
 logger = logging.getLogger(__name__)
+
 
 def is_timestamp(input_string: str) -> bool:
     """
     Detects if string is a timestamp
     relies on pandas.to_datetime() to detect the time format
     """
-    with warnings.catch_warnings():
-        warnings.filterwarnings('error')
+    with warnings.catch_warnings(): 
+        warnings.filterwarnings('error') # temporary behaviour
 
         try: 
             assert isinstance(input_string, str) 
@@ -43,9 +43,9 @@ def is_timestamp(input_string: str) -> bool:
 def has_url(input_string: str, exact: bool = False) -> bool:
     """
     Detects if string contains urls, use exact is True if the string is a url
-    works with a regex, see: urldetectionregex 
+    see ./urldetectionregex for the regexes
 
-    Note: I tried the package: urlextractor which is far too slow, regex is magnitudes faster
+    Note: I tried the package: urlextractor which is too slow, regex is magnitudes faster
     """
     try: 
         regex = urldetectionregex.URL_REGEX if exact == False else urldetectionregex.URL_REGEX_MATCH_BEGIN_AND_ENDLINE
@@ -65,7 +65,7 @@ def has_url(input_string: str, exact: bool = False) -> bool:
 def has_email(input_string: str, exact: bool = False) -> bool:
     """
     Detects if string contains emails, use exact is True if the string is an email
-    see urldetectionregex for the regex
+    see ./urldetectionregex for the regexes
     """
     try: 
         regex = urldetectionregex.EMAIL_REGEX if exact == False else urldetectionregex.EMAIL_REGEX_MATCH_BEGIN_AND_ENDLINE
@@ -84,7 +84,7 @@ def has_email(input_string: str, exact: bool = False) -> bool:
 
 def is_ipaddress (input_string: str) -> bool:
     """
-    Detects if string is a valid IPv4 or IPv6 address
+    Detects if string is a valid IPv4 or IPv6 address returns bool
     """
     try:
         assert isinstance(input_string, str) 

@@ -1,3 +1,6 @@
+######################################################################################################
+# My own testing grounds
+
 from pathlib import Path
 import magic
 import uuid
@@ -11,49 +14,6 @@ import importlib
 import logging
 logging.basicConfig(level=logging.ERROR)
 
-extractor = URLExtract()
-urls = extractor.has_urls("Let's have URL examplecom example.")
-urls
-print(urls) # prints: ['example.com']
-
-paths = Path("./Example_DDPs/Instagram_data_zenodo/horsesarecool52_20201020").glob('**/*')
-
-results = []
-for p in paths:
-    name = p.name
-    parent = p.parent
-    suffix = ' '.join(p.suffixes)
-    isdir = p.is_dir()
-
-    # file statistics
-    filestats = p.stat()
-    mtime = filestats.st_mtime
-    filesize = filestats.st_size
-
-    # output of the unix file cmd
-    try: 
-        filedescription = magic.from_file(p)
-        mimetype = magic.from_file(p, mime=True)
-    except IsADirectoryError:
-        filedescription = mimetype = None
-
-    results.append(
-        (
-            name, 
-            parent,
-            suffix,
-            isdir,
-            mtime,
-            filesize,
-            filedescription,
-            mimetype
-        )
-    )
-    
-    
-df = pd.DataFrame(results, columns = ["name", "parent", "suffix", "isdir", "mtime", "filesize", "filedescription", "mimetype"])
-df.to_excel("./test.xlsx")
-df
 
 import json
 
