@@ -88,7 +88,7 @@ def scan_json_in_folder(foldername: Path) -> pd.DataFrame:
         assert foldername.is_dir(), f"{foldername.name} is not a directory"
     except AssertionError as e:
         logger.critical(e)
-        return
+        raise e
 
     try:
         out = []
@@ -102,7 +102,7 @@ def scan_json_in_folder(foldername: Path) -> pd.DataFrame:
 
     except Exception as e:
         logger.critical(e)
-        raise(e)
+        raise e
 
 
 
