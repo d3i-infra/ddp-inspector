@@ -2,6 +2,26 @@
 # My own testing grounds
 # pieces of code that I run to test stuff
 
+# Create a sample dataset from a DDP
+
+import logging
+logging.basicConfig(level=logging.INFO)
+
+from examineddp.scanddp import scanfolder
+from examineddp.scanddp import scanjson
+from examineddp.scanddp import unzipddp
+
+unzipddp.recursive_unzip("./Example_DDPs.zip")
+
+df_folderstructure = scanfolder.scan_folder("./Example_DDPs/Instagram_data_zenodo")
+df_folderstructure = scanfolder.scan_("./Example_DDPs/Instagram_data_zenodo")
+
+
+
+
+
+
+
 from pathlib import Path
 import magic
 import uuid

@@ -11,7 +11,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def get_structure_json(path_to_json: Path) -> list[tuple]:
+def scan_json(path_to_json: Path) -> list[tuple]:
     """
     Reads the contents of a json file and assembles it into a set of datapoints
     """
@@ -27,9 +27,9 @@ def get_structure_json(path_to_json: Path) -> list[tuple]:
         return out
 
     # out is global in the scope of this function 
-    # used by get_structure_json_inner, which is a recursive function
+    # used by scan_json_inner, which is a recursive function
     last_modified = datetime.datetime.fromtimestamp(path_to_json.stat().st_mtime).isoformat()
-    def get_structure_json_inner(obj: dict, name: str, parent: str) -> None:
+    def scan_json_inner(obj: dict, name: str, parent: str) -> None:
 
         objtype = type(obj)
         objid = uuid.uuid4().hex
@@ -39,12 +39,12 @@ def get_structure_json(path_to_json: Path) -> list[tuple]:
             obj = dict(sorted(obj.items()))
             info = ':'.join(obj.keys())
             for k, v in obj.items():
-                get_structure_json_inner(v, k, objid)
+                scan_json_inner(v, k, objid)
 
         elif objtype == list:
             info = "list object"
             for index, item in enumerate(obj):
-                get_structure_json_inner(item, f"{name}_{index}", objid)
+                scan_json_inner(item, f"{name}_{index}", objid)
 
         elif objtype == str:
             info = obj
@@ -71,12 +71,12 @@ def get_structure_json(path_to_json: Path) -> list[tuple]:
                     )
                 )
 
-    get_structure_json_inner(obj, 'toplevel', '')
+    scan_json_inner(obj, 'toplevel', '')
 
     return out
 
 
-def scan_json_in_folder(foldername: Path) -> pd.DataFrame:
+def scan_json_all(foldername: Path) -> pd.DataFrame:
     """
     Reads contents of all json files in a folder recursively
     Returns a pandas dataframe
@@ -94,7 +94,7 @@ def scan_json_in_folder(foldername: Path) -> pd.DataFrame:
         out = []
         paths = foldername.glob('**/*.json')
         for p in paths:
-            out.extend(get_structure_json(p))
+            out.extend(scan_json(p))
 
         df = pd.DataFrame(out, columns = ["filename", "last_modified", "name", "objid", "parent", "objtype", "info", "is_ip", "is_time", "is_url"])
         
