@@ -1,5 +1,6 @@
 ######################################################################################################
 # My own testing grounds
+# pieces of code that I run to test stuff
 
 from pathlib import Path
 import magic

@@ -37,7 +37,7 @@ def recursive_unzip(path_to_zip: Path, remove_source: bool = False) -> None:
         
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Unzip folder resursively')
+    parser = argparse.ArgumentParser(description='Unzip a folder resursively')
     parser.add_argument('path', 
             help='Path to zipfile to unzip')
     parser.add_argument( '-log',
