@@ -17,24 +17,25 @@ def recursive_unzip(path_to_zip: Path, remove_source: bool = False) -> None:
     p = Path(path_to_zip)
 
     try:
-        if zipfile.is_zipfile(p):
-            with zipfile.ZipFile(p, 'r') as z:
-                z.extractall(p.parent)
-                logger.info("Extracting: %s", p)
-                for f in z.namelist():
-                    recursive_unzip(f, remove_source)
-            if remove_source:
-                logger.debug("REMOVING: %s", p)
-                os.remove(p)
+        new_location = p.parent/p.stem
 
-        else:
-            logger.debug("NOT a zipfile returning, %s", p)
-            return
+        with zipfile.ZipFile(p, 'r') as z:
+            logger.info("Extracting: %s", p)
+            z.extractall(new_location)
 
-    except EOFError:
-        logger.error("Could NOT unzip: %s, %s", p, "EOFError")
+        if remove_source:
+            logger.debug("REMOVING: %s", p)
+            os.remove(p)
+
+        paths = Path(new_location).glob("**/*.zip")
+        for p in paths:
+            recursive_unzip(p, True)
+
+    except (EOFError, zipfile.BadZipFile) as e:
+        logger.error("Could NOT unzip: %s, %s", p, e)
         pass
 
     except Exception as e:
         logger.error("Could NOT unzip: %s, %s", p, e)
         raise e
+        

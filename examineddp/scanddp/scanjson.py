@@ -1,6 +1,7 @@
 import json
 import uuid
 import datetime
+from json.decoder import JSONDecodeError
 
 import pandas as pd
 from pathlib import Path
@@ -11,25 +12,39 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def read_json_from_file(path_to_json: Path):
+    """
+    Reads json from file if succesful it returns the result from json.load()
+    """
+    path_to_json = Path(path_to_json)
+    out = None
+
+    try:
+        with open(path_to_json) as f:
+            out = json.load(f)
+        logger.debug("succesfully opened: %s", path_to_json.name)
+    except JSONDecodeError:
+        try:
+            with open(path_to_json, encoding="utf-8-sig") as f:
+                out = json.load(f)
+            logger.debug("succesfully opened: %s", path_to_json.name)
+        except Exception as e:
+            logger.error("%s, could not open: %s", e, path_to_json)
+            pass
+    except Exception as e:
+        logger.error("%s, could not open: %s", e, path_to_json)
+        pass
+    finally:
+        return out
+
+
 def scan_json(path_to_json: Path) -> list[tuple]:
     """
     Reads the contents of a json file and assembles it into a set of datapoints
     """
-
-    path_to_json = Path(path_to_json)
-    out = []
-    try:
-        with open(path_to_json) as f:
-            obj = json.load(f)
-        logger.debug("succesfully opened: %s", path_to_json.name)
-    except Exception as e:
-        logger.error("%s, could not open: %s", e, path_to_json.name)
-        return out
-
-    # out is global in the scope of this function 
-    # used by scan_json_inner, which is a recursive function
-    last_modified = datetime.datetime.fromtimestamp(path_to_json.stat().st_mtime).isoformat()
-    def scan_json_inner(obj: dict, name: str, parent: str) -> None:
+    
+    # scan_json_inner use the variables: out, and last_modified, they are gobal to the outerscope
+    def scan_json_inner(obj, name: str, parent: str) -> None:
 
         objtype = type(obj)
         objid = uuid.uuid4().hex
@@ -70,8 +85,14 @@ def scan_json(path_to_json: Path) -> list[tuple]:
                     is_url
                     )
                 )
+    
+    # Globals used by scan_json_inner
+    out = []
+    last_modified = datetime.datetime.fromtimestamp(path_to_json.stat().st_mtime).isoformat()
 
-    scan_json_inner(obj, 'toplevel', '')
+    obj = read_json_from_file(path_to_json)
+    if obj :
+        scan_json_inner(obj, 'toplevel', '')
 
     return out
 

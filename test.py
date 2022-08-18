@@ -13,10 +13,13 @@ from examineddp.scanddp import unzipddp
 
 unzipddp.recursive_unzip("./Example_DDPs.zip")
 
-df_folderstructure = scanfolder.scan_folder("./Example_DDPs/Instagram_data_zenodo")
-df_folderstructure = scanfolder.scan_("./Example_DDPs/Instagram_data_zenodo")
+df_folder_structure = scanfolder.scan_folder("./Example_DDPs/Example_DDPs/Instagram_data_zenodo")
+df_json_structure = scanjson.scan_json_all("./Example_DDPs/Example_DDPs/Instagram_data_zenodo")
 
+df_json_structure["last_modified"]
+df_folder_structure["last_modified"]
 
+df_folder_structure
 
 
 
@@ -192,7 +195,69 @@ importlib.reload(stringparse)
 
 stringparse.is_timestamp("8P6HPMGL90")
 
+from pathlib import Path
+paths = Path("./Example_DDPs/Example_DDPs/Sample_SocialMedia/sample-platform-gonzalezkatherine-0/").glob("**/*.zip")
+
+for p in paths:
+    print(p)
+
+r.encoding='utf-8-sig'
+data = json.loads(r.text)
 
 
 
 
+import json
+
+
+with open(check) as f:
+    dat = json.load(f)
+
+
+dat
+test = {}
+
+if test:
+    print("Asd")
+
+
+import logging
+logging.basicConfig(level=logging.DEBUG)
+from examineddp.scanddp import scanjson
+
+example = "Example_DDPs/Example_DDPs/Instagram_data_zenodo/horsesarecool52_20201020/settings.json"
+check = "Example_DDPs/Example_DDPs/Instagram_data_zenodo/katsaremeow_20201020/uploaded_contacts.json"
+asd = scanjson.read_json_from_file(check)
+asd = scanjson.read_json_from_file(example)
+asd
+type(asd)
+
+with open(check, encoding="utf-8-sig") as f:
+    dat = json.load(f)
+
+
+
+if not None:
+    print("ASD")
+
+
+from pathlib import Path
+import zipfile
+import time
+path = Path("asdasd/asdasd")
+
+with zipfile.ZipFile("./Example_DDPs.zip", 'r') as zf:
+    # see https://stackoverflow.com/a/23133992
+    for zi in zf.infolist():
+        date_time = time.mktime(zi.date_time + (0, 0, -1))
+        print(zi)
+        print(zi.filename)
+        print(date_time)
+        newp = path/zi.filename
+        print(newp)
+
+
+
+        zf.extract(zi)
+        date_time = time.mktime(zi.date_time + (0, 0, -1))
+        os.utime(zi.filename, (date_time, date_time))

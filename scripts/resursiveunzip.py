@@ -1,4 +1,5 @@
 from pathlib import Path
+import time
 import zipfile
 import argparse
 import os
@@ -15,9 +16,16 @@ def recursive_unzip(path_to_zip: Path, remove_source: bool = False) -> None:
     try:
         new_location = p.parent/p.stem
 
-        with zipfile.ZipFile(p, 'r') as z:
+        with zipfile.ZipFile(p, 'r') as zf:
             logging.info("Extracting: %s", p)
-            z.extractall(new_location)
+
+            # see https://stackoverflow.com/a/23133992
+            # zipfile overwrite modification times
+            # keep the original
+            for zi in zf.infolist():
+                date_time = time.mktime(zi.date_time + (0, 0, -1))
+                zf.extract(zi, new_location)
+                os.utime(new_location/zi.filename, (date_time, date_time))
 
         if remove_source:
             logging.debug("REMOVING: %s", p)
@@ -25,7 +33,7 @@ def recursive_unzip(path_to_zip: Path, remove_source: bool = False) -> None:
 
         paths = Path(new_location).glob("**/*.zip")
         for p in paths:
-            recursive_unzip(p, remove_source)
+            recursive_unzip(p, True)
 
     except (EOFError, zipfile.BadZipFile) as e:
         logging.error("Could NOT unzip: %s, %s", p, e)
