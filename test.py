@@ -16,11 +16,12 @@ unzipddp.recursive_unzip("./Example_DDPs.zip")
 df_folder_structure = scanfolder.scan_folder("./Example_DDPs/Example_DDPs/Instagram_data_zenodo")
 df_json_structure = scanjson.scan_json_all("./Example_DDPs/Example_DDPs/Instagram_data_zenodo")
 
+df_json_structure.to_excel("test_jsons.xlsx")
+
 df_json_structure["last_modified"]
 df_folder_structure["last_modified"]
 
 df_folder_structure
-
 
 
 
@@ -253,11 +254,26 @@ with zipfile.ZipFile("./Example_DDPs.zip", 'r') as zf:
         print(zi)
         print(zi.filename)
         print(date_time)
-        newp = path/zi.filename
+        newp = path/Path(zi.filename).name
         print(newp)
-
 
 
         zf.extract(zi)
         date_time = time.mktime(zi.date_time + (0, 0, -1))
         os.utime(zi.filename, (date_time, date_time))
+
+
+
+
+
+
+
+with zipfile.ZipFile("./Example_DDPs.zip", 'r') as zf:
+    # see https://stackoverflow.com/a/23133992
+    for zi in zf.infolist():
+        date_time = time.mktime(zi.date_time + (0, 0, -1))
+        print(zi)
+        print(zi.filename)
+        print(date_time)
+        newp = path/Path(zi.filename).name
+        print(newp)
