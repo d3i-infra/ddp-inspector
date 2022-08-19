@@ -2,8 +2,6 @@
 # My own testing grounds
 # pieces of code that I run to test stuff
 
-# Create a sample dataset from a DDP
-
 import logging
 logging.basicConfig(level=logging.INFO)
 
@@ -11,15 +9,11 @@ from examineddp.scanddp import scanfolder
 from examineddp.scanddp import scanjson
 from examineddp.scanddp import unzipddp
 
+# unzip folder leaving the folder structure in tact
 unzipddp.recursive_unzip("./Example_DDPs.zip")
 
 df_folder_structure = scanfolder.scan_folder("./Example_DDPs/Example_DDPs/Instagram_data_zenodo")
 df_json_structure = scanjson.scan_json_all("./Example_DDPs/Example_DDPs/Instagram_data_zenodo")
-
-df_json_structure.to_excel("test_jsons.xlsx")
-
-df_json_structure["last_modified"]
-df_folder_structure["last_modified"]
 
 df_folder_structure
 
