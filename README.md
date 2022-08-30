@@ -7,7 +7,18 @@ Thusfar, this repo contains functions:
 * To scan all json files in a folder. Flattens the structure of json files and record information about the key value pairs. Returns results in a `pandas.DataFrame`.
 
 
-## Basic usage
+## Installation
+
+Install the dependencies in requirements.txt in a virtual environment:
+
+```
+python3 -m venv ./env
+source env/bin/activate
+pip3 install -r requirements.txt
+```
+
+
+## Usage
 
 ``` python
 import logging
@@ -23,6 +34,4 @@ unzipddp.recursive_unzip("./Example_DDPs.zip")
 df_folder_structure = scanfolder.scan_folder("./Example_DDPs/Example_DDPs/Instagram_data_zenodo")
 df_json_structure = scanjson.scan_json_all("./Example_DDPs/Example_DDPs/Instagram_data_zenodo")
 ```
-
-
 
