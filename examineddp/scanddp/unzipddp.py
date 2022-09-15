@@ -1,13 +1,17 @@
 """
-Recursively unzip a DDP, DDPs could contain nested zips
+Contains functions to deal with zipfiles
 """
 from pathlib import Path
 import zipfile
 import argparse
 import os
+import io
 
 import logging
 logger = logging.getLogger(__name__)
+
+class FileNotFoundInZipError(Exception):
+    pass
 
 def recursive_unzip(path_to_zip: Path, remove_source: bool = False) -> None:
     """
@@ -39,9 +43,40 @@ def recursive_unzip(path_to_zip: Path, remove_source: bool = False) -> None:
 
     except (EOFError, zipfile.BadZipFile) as e:
         logging.error("Could NOT unzip: %s, %s", p, e)
-        pass
-
     except Exception as e:
         logging.error("Could NOT unzip: %s, %s", p, e)
         raise e
         
+
+
+
+def extract_file_from_zip(zfile: zipfile.ZipFile, file_to_extract: str) -> io.BytesIO:
+    """
+    Extracts a specific file from a zipfile io.BytesIO buffer 
+    Function always returns a buffer
+    """
+    file_to_extract_bytes = io.BytesIO()
+
+    try :
+        with zipfile.ZipFile(zfile, 'r') as zf:
+            file_found = False
+
+            for f in zf.namelist():
+                if Path(f).name == file_to_extract:
+                    file_to_extract_bytes = io.BytesIO(zf.read(f))
+                    file_found = True
+                    break
+
+        if not file_found:
+            raise FileNotFoundInZipError("File not found in zip")
+
+    except zipfile.BadZipFile as e:
+        logger.error("BadZipFile:  %s", e)
+    except FileNotFoundInZipError as e:
+        logger.error("File not found:  %s: %s", file_to_extract, e)
+    except Exception as e:
+        logger.error("Exception was caught:  %s", e)
+
+    finally:
+        return file_to_extract_bytes
+
