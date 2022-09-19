@@ -12,6 +12,5 @@ URL_REGEX_MATCH_BEGIN_AND_ENDLINE = r"""(?i)^\b((?:https?:(?:/{1,3}|[a-z0-9%])|[
 """
 https://stackoverflow.com/a/201378
 """
-
-EMAIL_REGEX	= r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)"
+EMAIL_REGEX = r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)"
 EMAIL_REGEX_MATCH_BEGIN_AND_ENDLINE = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
