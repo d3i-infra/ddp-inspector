@@ -1,5 +1,11 @@
 # DDP Volatility Project
 
+# TODO implement:
+
+1. Create installable package
+2. Create unit test
+3. Automate testing with github actions
+
 This folder contains scripts to extract the structure out of any data download package.
 Thusfar, this repo contains functions: 
 
