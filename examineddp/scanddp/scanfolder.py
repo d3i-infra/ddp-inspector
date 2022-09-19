@@ -1,7 +1,6 @@
 from pathlib import Path
 from pathlib import PurePath
 import pandas as pd
-import json
 import datetime
 import magic
 
@@ -34,12 +33,15 @@ def scan_folder(foldername: Path) -> pd.DataFrame:
 
             # Obtain file statistics
             filestats = p.stat()
-            mtime = datetime.datetime.fromtimestamp(filestats.st_mtime).isoformat()
+            mtime = datetime.datetime\
+                            .fromtimestamp(filestats.st_mtime)\
+                            .isoformat()
+
             filesize = filestats.st_size
 
             # Examine files with python package: magic
             # Equivalent to the unix "file" command
-            if not isdir: 
+            if not isdir:
                 filedescription = magic.from_file(p)
                 mimetype = magic.from_file(p, mime=True)
             else:
@@ -47,7 +49,7 @@ def scan_folder(foldername: Path) -> pd.DataFrame:
 
             out.append(
                 (
-                    name, 
+                    name,
                     parent,
                     suffix,
                     isdir,
@@ -63,10 +65,7 @@ def scan_folder(foldername: Path) -> pd.DataFrame:
             logger.error("%s, could not examine file/folder %s", e, p)
             pass
 
-        
-    df = pd.DataFrame(out, columns = ["name", "parent", "suffix", "is_dir", "last_modified", "file_size", "file_description", "mimetype"])
+    df = pd.DataFrame(out, columns=["name", "parent", "suffix",
+                                    "is_dir", "last_modified", "file_size",
+                                    "file_description", "mimetype"])
     return df
-
-
-
-
