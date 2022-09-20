@@ -3,15 +3,17 @@ Contains functions to deal with zipfiles
 """
 from pathlib import Path
 import zipfile
-import argparse
+import time
 import os
 import io
 
 import logging
 logger = logging.getLogger(__name__)
 
+
 class FileNotFoundInZipError(Exception):
     pass
+
 
 def recursive_unzip(path_to_zip: Path, remove_source: bool = False) -> None:
     """
@@ -23,7 +25,7 @@ def recursive_unzip(path_to_zip: Path, remove_source: bool = False) -> None:
         new_location = p.parent/p.stem
 
         with zipfile.ZipFile(p, 'r') as zf:
-            logging.info("Extracting: %s", p)
+            logger.info("Extracting: %s", p)
 
             # see https://stackoverflow.com/a/23133992
             # zipfile overwrite modification times
@@ -34,7 +36,7 @@ def recursive_unzip(path_to_zip: Path, remove_source: bool = False) -> None:
                 os.utime(new_location/zi.filename, (date_time, date_time))
 
         if remove_source:
-            logging.debug("REMOVING: %s", p)
+            logger.debug("REMOVING: %s", p)
             os.remove(p)
 
         paths = Path(new_location).glob("**/*.zip")
@@ -42,22 +44,20 @@ def recursive_unzip(path_to_zip: Path, remove_source: bool = False) -> None:
             recursive_unzip(p, True)
 
     except (EOFError, zipfile.BadZipFile) as e:
-        logging.error("Could NOT unzip: %s, %s", p, e)
+        logger.error("Could NOT unzip: %s, %s", p, e)
     except Exception as e:
-        logging.error("Could NOT unzip: %s, %s", p, e)
+        logger.error("Could NOT unzip: %s, %s", p, e)
         raise e
-        
-
 
 
 def extract_file_from_zip(zfile: zipfile.ZipFile, file_to_extract: str) -> io.BytesIO:
     """
-    Extracts a specific file from a zipfile io.BytesIO buffer 
+    Extracts a specific file from a zipfile buffer
     Function always returns a buffer
     """
     file_to_extract_bytes = io.BytesIO()
 
-    try :
+    try:
         with zipfile.ZipFile(zfile, 'r') as zf:
             file_found = False
 
@@ -79,4 +79,3 @@ def extract_file_from_zip(zfile: zipfile.ZipFile, file_to_extract: str) -> io.By
 
     finally:
         return file_to_extract_bytes
-

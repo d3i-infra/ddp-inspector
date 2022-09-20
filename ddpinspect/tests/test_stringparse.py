@@ -1,11 +1,11 @@
 """
 Tests to determine the functionality of functions in the parserlib module
 
-Tests can be added and changed when needed 
+Tests can be added and changed when needed
 """
+
 import pytest
 from parserlib import stringparse
-
 
 @pytest.mark.parametrize("test_timestamp, expected", [
     ("2005-10-30 T 10:45 UTC", True),
@@ -20,7 +20,7 @@ def test_is_timestamp(test_timestamp: str, expected: bool) -> None:
     test stringparse.is_timestamp
     """
     assert stringparse.is_timestamp(test_timestamp) is expected,\
-        f"Timestamp: {test_input} is not identified as bool: {expected}"
+        f"Timestamp: {test_timestamp} is not identified as bool: {expected}"
 
 
 @pytest.mark.parametrize("test_url, is_exact_url, expected", [
@@ -32,8 +32,8 @@ def test_is_timestamp(test_timestamp: str, expected: bool) -> None:
     ("     www.url.com",                               False, True),
     ("https://banaan.com check check",                 False, True),
     ("!@#%$%&$&https://frikandelspeciaal.nl*#@$^*^@#", False, True),
-    ("  htp://frikandelspeciaal.nl ",                  False, True), 
-    ("        frikandelspeciaal.nl ",                  False, True), 
+    ("  htp://frikandelspeciaal.nl ",                  False, True),
+    ("        frikandelspeciaal.nl ",                  False, True),
 ])
 def test_has_url(test_url: str, is_exact_url: bool, expected: bool) -> None:
     """
@@ -41,31 +41,10 @@ def test_has_url(test_url: str, is_exact_url: bool, expected: bool) -> None:
     """
     assert stringparse.has_url(test_url, is_exact_url) is expected,\
         f"url: {test_url} in exact mode: {is_exact_url}, it should be bool: {expected}"
-
-
-@pytest.mark.parametrize("test_url, is_exact_url, expected", [
-    ("www.url.com",                                    True,  True),
-    ("https://banaan.com",                             True,  True),
-    ("http://frikandelspeciaal.nl",                    True,  True),
-    (" http://frikandelspeciaal.nl",                   True,  False),
-    ("htp://frikandelspeciaal.nl",                     True,  False),
-    ("     www.url.com",                               False, True),
-    ("https://banaan.com check check",                 False, True),
-    ("!@#%$%&$&https://frikandelspeciaal.nl*#@$^*^@#", False, True),
-    ("  htp://frikandelspeciaal.nl ",                  False, True), 
-    ("        frikandelspeciaal.nl ",                  False, True), 
-])
-def test_has_url(test_url: str, is_exact_url: bool, expected: bool) -> None:
-    """
-    test stringparse.has_url
-    """
-    assert stringparse.has_url(test_url, is_exact_url) is expected,\
-        f"url: {test_url} in exact mode: {is_exact_url}, it should be bool: {expected}"
-
 
 
 @pytest.mark.parametrize("test_email, is_exact_email, expected", [
-    # These should evaluate to True 
+    # These should evaluate to True
     (r'simple@example.com', True, True),
     (r'very.common@example.com', True, True),
     (r'disposable.style.email.with+symbol@example.com', True, True),
@@ -84,8 +63,8 @@ def test_has_url(test_url: str, is_exact_url: bool, expected: bool) -> None:
     (r'postmaster@[123.123.123.123]', True, True),
     # These should evaluate to True, but the current implementation evaluate them to False
     (r'postmaster@[IPv6:2001:0db8:85a3:0000:0000:8a2e:0370:7334]', True, False),
-    (r'admin@mailserver1', True, False),  
-    (r'""@example.org ', True, False),     
+    (r'admin@mailserver1', True, False),
+    (r'""@example.org ', True, False),
     # These should evaluate to False
     (r'Abc.example.com', True, False),
     ('A@b@c@example.co', True, False),
@@ -109,9 +88,9 @@ def test_has_email(test_email: str, is_exact_email: bool, expected: bool) -> Non
 
 
 @pytest.mark.parametrize("test_ip, expected", [
-    ("127.0.0.1",     True),
-    ("1788727.0.0.1", False),
-    ("127.0.0.256",   False),
+    ("127.0.0.1",                              True),
+    ("1788727.0.0.1",                          False),
+    ("127.0.0.256",                            False),
     ("2001:db8:3333:4444:5555:6666:7777:8888", True),
     ("2001:db8:3333:4444:CCCC:DDDD:EEEE:FFFF", True),
     ("2001:db8:3333:4444:CQCC:DDDD:EEEE:FFFF", False),

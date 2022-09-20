@@ -25,7 +25,7 @@ def twitter_bytesio_to_listdict(bytes_to_read: io.BytesIO) -> list[dict]:
     lines = []
 
     try:
-        with io.TextIOWrapper(bytes_to_read, encoding ="utf8") as f:
+        with io.TextIOWrapper(bytes_to_read, encoding="utf8") as f:
             lines = f.readlines()
 
         # remove first and element from list
@@ -34,7 +34,7 @@ def twitter_bytesio_to_listdict(bytes_to_read: io.BytesIO) -> list[dict]:
         # convert to a list of dicts
         out = json.loads("".join(lines))
 
-    except json.decoder.JSONDecodeError as e :
+    except json.decoder.JSONDecodeError as e:
         logger.error("The input buffer did not contain a valid JSON:  %s", e)
     except IndexError as e:
         logger.error("No lines were read, could be empty input buffer:  %s", e)
@@ -46,7 +46,7 @@ def twitter_bytesio_to_listdict(bytes_to_read: io.BytesIO) -> list[dict]:
 
 
 def twitter_interests_from_listdict(interest_list: list[dict]) -> list:
-    """ 
+    """
     This function extracts twitter interests from a list[dict]
     This list[dict] should be obtained from personalization.js
 
@@ -77,5 +77,3 @@ def twitter_interests_from_listdict(interest_list: list[dict]) -> list:
 
     finally:
         return out
-
-

@@ -1,4 +1,5 @@
-"""The web url matching regex used by markdown
+"""
+The web url matching regex used by markdown
 * http://daringfireball.net/2010/07/improved_regex_for_matching_urls
 * https://gist.github.com/gruber/8891611
 * https://stackoverflow.com/a/28552670
@@ -11,6 +12,9 @@ URL_REGEX_MATCH_BEGIN_AND_ENDLINE = r"""(?i)^\b((?:https?:(?:/{1,3}|[a-z0-9%])|[
 
 """
 https://stackoverflow.com/a/201378
+see: http://emailregex.com/
+I converted the ECMA script regex to Python
 """
+
 EMAIL_REGEX = r"(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))"
 EMAIL_REGEX_MATCH_BEGIN_AND_ENDLINE = r"^(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$"

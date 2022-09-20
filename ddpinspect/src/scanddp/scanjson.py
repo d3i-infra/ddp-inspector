@@ -42,7 +42,7 @@ def scan_json(path_to_json: Path) -> list[tuple]:
     """
     Reads the contents of a json file and assembles it into a set of datapoints
     """
-    
+
     # scan_json_inner use the variables: out, and last_modified, they are gobal to the outerscope
     def scan_json_inner(obj, name: str, parent: str) -> None:
 
@@ -67,7 +67,7 @@ def scan_json(path_to_json: Path) -> list[tuple]:
             is_ip = stringparse.is_ipaddress(obj)
             is_time = stringparse.is_timestamp(obj)
             is_url = stringparse.has_url(obj)
-            
+
         else:
             info = obj
 
@@ -75,23 +75,23 @@ def scan_json(path_to_json: Path) -> list[tuple]:
                 (
                     path_to_json.name,
                     last_modified,
-                    name, 
-                    objid, 
-                    parent, 
-                    str(objtype), 
+                    name,
+                    objid,
+                    parent,
+                    str(objtype),
                     info,
                     is_ip,
                     is_time,
                     is_url
                     )
                 )
-    
+
     # Globals used by scan_json_inner
     out = []
     last_modified = datetime.datetime.fromtimestamp(path_to_json.stat().st_mtime).isoformat()
 
     obj = read_json_from_file(path_to_json)
-    if obj :
+    if obj:
         scan_json_inner(obj, 'toplevel', '')
 
     return out
@@ -117,13 +117,10 @@ def scan_json_all(foldername: Path) -> pd.DataFrame:
         for p in paths:
             out.extend(scan_json(p))
 
-        df = pd.DataFrame(out, columns = ["filename", "last_modified", "name", "objid", "parent", "objtype", "info", "is_ip", "is_time", "is_url"])
-        
+        df = pd.DataFrame(out, columns=["filename", "last_modified", "name", "objid", "parent", "objtype", "info", "is_ip", "is_time", "is_url"])
+
         return df
 
     except Exception as e:
         logger.critical(e)
         raise e
-
-
-
