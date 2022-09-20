@@ -36,10 +36,8 @@ def read_json_from_file(path_to_json: Path):
             logger.debug("succesfully opened: %s", path_to_json.name)
         except Exception as e:
             logger.error("%s, could not open: %s", e, path_to_json)
-            pass
     except Exception as e:
         logger.error("%s, could not open: %s", e, path_to_json)
-        pass
     finally:
         return out
 

@@ -20,3 +20,9 @@ warn_return_any = true
 warn_unreachable = true
 warn_unused_configs = true
 no_implicit_reexport = true
+
+[tool.pylint.BASIC]
+good-names = ["f", "e", "df", "p", "k", "v", "zi", "zf"]
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = ["C0301"]
