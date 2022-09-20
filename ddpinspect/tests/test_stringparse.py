@@ -10,7 +10,6 @@ from parserlib import stringparse
 
 @pytest.mark.parametrize("test_timestamp, expected", [
     ("2005-10-30 T 10:45 UTC", True),
-    ("2005-10-30 T 10:45 UTC", False),
     ("2007-11-09 T 11:20 UTC", True),
     ("Sat Jul 23 02:16:57 2005", True),
     ("2009-10-31T01:48:52Z", True),
