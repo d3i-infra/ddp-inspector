@@ -7,6 +7,7 @@ Tests can be added and changed when needed
 import pytest
 from parserlib import stringparse
 
+
 @pytest.mark.parametrize("test_timestamp, expected", [
     ("2005-10-30 T 10:45 UTC", True),
     ("2007-11-09 T 11:20 UTC", True),
