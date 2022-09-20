@@ -8,6 +8,7 @@ import os
 import io
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -22,9 +23,9 @@ def recursive_unzip(path_to_zip: Path, remove_source: bool = False) -> None:
     p = Path(path_to_zip)
 
     try:
-        new_location = p.parent/p.stem
+        new_location = p.parent / p.stem
 
-        with zipfile.ZipFile(p, 'r') as zf:
+        with zipfile.ZipFile(p, "r") as zf:
             logger.info("Extracting: %s", p)
 
             # see https://stackoverflow.com/a/23133992
@@ -33,7 +34,7 @@ def recursive_unzip(path_to_zip: Path, remove_source: bool = False) -> None:
             for zi in zf.infolist():
                 date_time = time.mktime(zi.date_time + (0, 0, -1))
                 zf.extract(zi, new_location)
-                os.utime(new_location/zi.filename, (date_time, date_time))
+                os.utime(new_location / zi.filename, (date_time, date_time))
 
         if remove_source:
             logger.debug("REMOVING: %s", p)
@@ -58,7 +59,7 @@ def extract_file_from_zip(zfile: str, file_to_extract: str) -> io.BytesIO:
     file_to_extract_bytes = io.BytesIO()
 
     try:
-        with zipfile.ZipFile(zfile, 'r') as zf:
+        with zipfile.ZipFile(zfile, "r") as zf:
             file_found = False
 
             for f in zf.namelist():

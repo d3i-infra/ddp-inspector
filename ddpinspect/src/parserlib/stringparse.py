@@ -6,6 +6,7 @@ import warnings
 from parserlib import urldetectionregex
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -15,11 +16,11 @@ def is_timestamp(input_string: str) -> bool:
     relies on pandas.to_datetime() to detect the time format
     """
     with warnings.catch_warnings():
-        warnings.filterwarnings('error')  # temporary behaviour
+        warnings.filterwarnings("error")  # temporary behaviour
 
         try:
             assert isinstance(input_string, str)
-            assert input_string != ''
+            assert input_string != ""
             assert input_string.isdigit() is False
 
             pd.to_datetime(input_string)
@@ -32,9 +33,13 @@ def is_timestamp(input_string: str) -> bool:
             return False
 
         except Warning as e:
-            logger.warning("WARNING was raised as exception "
-                           "probably NO timestamp in: "
-                           "'%s', %s", input_string, e)
+            logger.warning(
+                "WARNING was raised as exception "
+                "probably NO timestamp in: "
+                "'%s', %s",
+                input_string,
+                e,
+            )
             return False
 
         except Exception as e:
@@ -51,8 +56,11 @@ def has_url(input_string: str, exact: bool = False) -> bool:
     regex is magnitudes faster
     """
     try:
-        regex = urldetectionregex.URL_REGEX if exact is False\
-                else urldetectionregex.URL_REGEX_MATCH_BEGIN_AND_ENDLINE
+        regex = (
+            urldetectionregex.URL_REGEX
+            if exact is False
+            else urldetectionregex.URL_REGEX_MATCH_BEGIN_AND_ENDLINE
+        )
         assert re.search(regex, input_string) is not None
         logger.debug("urls FOUND in: '%s'", input_string)
         return True
@@ -73,8 +81,11 @@ def has_email(input_string: str, exact: bool = False) -> bool:
     see ./urldetectionregex for the regexes
     """
     try:
-        regex = urldetectionregex.EMAIL_REGEX if exact is False\
-                else urldetectionregex.EMAIL_REGEX_MATCH_BEGIN_AND_ENDLINE
+        regex = (
+            urldetectionregex.EMAIL_REGEX
+            if exact is False
+            else urldetectionregex.EMAIL_REGEX_MATCH_BEGIN_AND_ENDLINE
+        )
         assert re.search(regex, input_string) is not None
         logger.debug("emails FOUND in: '%s'", input_string)
         return True

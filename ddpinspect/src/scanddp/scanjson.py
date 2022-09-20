@@ -10,6 +10,7 @@ from pathlib import Path
 from parserlib import stringparse
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -53,7 +54,7 @@ def scan_json(path_to_json: Path) -> list[tuple[Any, ...]]:
 
         if objtype == dict:
             obj = dict(sorted(obj.items()))
-            info = ':'.join(obj.keys())
+            info = ":".join(obj.keys())
             for k, v in obj.items():
                 scan_json_inner(v, k, objid)
 
@@ -73,27 +74,29 @@ def scan_json(path_to_json: Path) -> list[tuple[Any, ...]]:
             info = obj
 
         out.append(
-                (
-                    path_to_json.name,
-                    last_modified,
-                    name,
-                    objid,
-                    parent,
-                    str(objtype),
-                    info,
-                    is_ip,
-                    is_time,
-                    is_url
-                    )
-                )
+            (
+                path_to_json.name,
+                last_modified,
+                name,
+                objid,
+                parent,
+                str(objtype),
+                info,
+                is_ip,
+                is_time,
+                is_url,
+            )
+        )
 
     # Globals used by scan_json_inner
     out: list[tuple[Any, ...]] = []
-    last_modified = datetime.datetime.fromtimestamp(path_to_json.stat().st_mtime).isoformat()
+    last_modified = datetime.datetime.fromtimestamp(
+        path_to_json.stat().st_mtime
+    ).isoformat()
 
     obj = read_json_from_file(path_to_json)
     if obj:
-        scan_json_inner(obj, 'toplevel', '')
+        scan_json_inner(obj, "toplevel", "")
 
     return out
 
@@ -114,11 +117,25 @@ def scan_json_all(foldername: Path) -> pd.DataFrame:
 
     try:
         out = []
-        paths = foldername.glob('**/*.json')
+        paths = foldername.glob("**/*.json")
         for p in paths:
             out.extend(scan_json(p))
 
-        df = pd.DataFrame(out, columns=["filename", "last_modified", "name", "objid", "parent", "objtype", "info", "is_ip", "is_time", "is_url"])
+        df = pd.DataFrame(
+            out,
+            columns=[
+                "filename",
+                "last_modified",
+                "name",
+                "objid",
+                "parent",
+                "objtype",
+                "info",
+                "is_ip",
+                "is_time",
+                "is_url",
+            ],
+        )
 
         return df
 

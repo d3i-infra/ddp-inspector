@@ -14,6 +14,7 @@ from typing import Any
 from parserlib import stringparse
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -59,7 +60,7 @@ def scan_json(path_to_json: Path) -> list[tuple[Any, ...]]:
 
         if objtype == dict:
             obj = dict(sorted(obj.items()))
-            info = ':'.join(obj.keys())
+            info = ":".join(obj.keys())
             for k, v in obj.items():
                 scan_json_inner(v, k, objid)
 
@@ -79,27 +80,29 @@ def scan_json(path_to_json: Path) -> list[tuple[Any, ...]]:
             info = obj
 
         out.append(
-                (
-                    path_to_json.name,
-                    last_modified,
-                    name,
-                    objid,
-                    parent,
-                    str(objtype),
-                    info,
-                    is_ip,
-                    is_time,
-                    is_url
-                    )
-                )
+            (
+                path_to_json.name,
+                last_modified,
+                name,
+                objid,
+                parent,
+                str(objtype),
+                info,
+                is_ip,
+                is_time,
+                is_url,
+            )
+        )
 
     # Globals used by scan_json_inner
     out: list[tuple[Any, ...]] = []
-    last_modified = datetime.datetime.fromtimestamp(path_to_json.stat().st_mtime).isoformat()
+    last_modified = datetime.datetime.fromtimestamp(
+        path_to_json.stat().st_mtime
+    ).isoformat()
 
     obj = read_json_from_file(path_to_json)
     if obj:
-        scan_json_inner(obj, 'toplevel', '')
+        scan_json_inner(obj, "toplevel", "")
 
     return out
 
@@ -120,11 +123,25 @@ def scan_json_all(foldername: Path) -> pd.DataFrame:
 
     try:
         out = []
-        paths = foldername.glob('**/*.json')
+        paths = foldername.glob("**/*.json")
         for p in paths:
             out.extend(scan_json(p))
 
-        df = pd.DataFrame(out, columns=["filename", "last_modified", "name", "objid", "parent", "objtype", "info", "is_ip", "is_time", "is_url"])
+        df = pd.DataFrame(
+            out,
+            columns=[
+                "filename",
+                "last_modified",
+                "name",
+                "objid",
+                "parent",
+                "objtype",
+                "info",
+                "is_ip",
+                "is_time",
+                "is_url",
+            ],
+        )
 
         return df
 
@@ -148,19 +165,17 @@ def scan_all_files(foldername: Path) -> pd.DataFrame:
         raise e
 
     out = []
-    paths = Path(foldername).glob('**/*')
+    paths = Path(foldername).glob("**/*")
     for p in paths:
         try:
             name = p.name
             parent = str(PurePath(p.parent).relative_to(foldername.parent))
-            suffix = ' '.join(p.suffixes)
+            suffix = " ".join(p.suffixes)
             isdir = p.is_dir()
 
             # Obtain file statistics
             filestats = p.stat()
-            mtime = datetime.datetime\
-                            .fromtimestamp(filestats.st_mtime)\
-                            .isoformat()
+            mtime = datetime.datetime.fromtimestamp(filestats.st_mtime).isoformat()
 
             filesize = filestats.st_size
 
@@ -182,7 +197,7 @@ def scan_all_files(foldername: Path) -> pd.DataFrame:
                     mtime,
                     filesize,
                     filedescription,
-                    mimetype
+                    mimetype,
                 )
             )
 
@@ -191,7 +206,17 @@ def scan_all_files(foldername: Path) -> pd.DataFrame:
             logger.error("%s, could not examine file/folder %s", e, p)
             raise e
 
-    df = pd.DataFrame(out, columns=["name", "parent", "suffix",
-                                    "is_dir", "last_modified", "file_size",
-                                    "file_description", "mimetype"])
+    df = pd.DataFrame(
+        out,
+        columns=[
+            "name",
+            "parent",
+            "suffix",
+            "is_dir",
+            "last_modified",
+            "file_size",
+            "file_description",
+            "mimetype",
+        ],
+    )
     return df

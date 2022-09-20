@@ -30,7 +30,7 @@ def twitter_bytesio_to_listdict(bytes_to_read: io.BytesIO) -> list[dict[Any, Any
             lines = f.readlines()
 
         # remove first and element from list
-        lines[0] = re.sub('^.*? = ', '', lines[0])
+        lines[0] = re.sub("^.*? = ", "", lines[0])
 
         # convert to a list of dicts
         out = json.loads("".join(lines))
