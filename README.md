@@ -2,11 +2,15 @@
 
 # TODO implement:
 
-1. Create installable package
-2. Create unit test
+1. Create more unit test
+2. Update this README
 3. Automate testing with github actions
 
-This folder contains scripts to extract the structure out of any data download package.
+This repo contains a `ddinspect` a python package to extract the structure out of any data download package. 
+This package will also contain modules to extract information out of data download packages from specific platforms.
+
+The possibilities of different extractions are too vast, you will only find 
+
 Thusfar, this repo contains functions: 
 
 * To examine all files in a folder. Recursively, walk through a folder and record: `ls`-like statistics and file type using `python-magic` equivalent to the Linux `file` command. Returns results in a `pandas.DataFrame`

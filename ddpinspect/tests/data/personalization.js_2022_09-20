@@ -1,0 +1,59 @@
+window.YTD.personalization.part0 = [
+  {
+    "p13nData" : {
+      "demographics" : {
+        "languages" : [
+          {
+            "language" : "asd",
+            "isDisabled" : false
+          }
+        ],
+        "genderInfo" : {
+          "gender" : "asd"
+        }
+      },
+      "interests" : {
+        "interests" : [
+          {
+            "name" : "Interest 1",
+            "isDisabled" : false
+          },
+          {
+            "name" : "Interest 2",
+            "isDisabled" : false
+          }
+        ],
+        "partnerInterests" : [ ],
+        "audienceAndAdvertisers" : {
+          "lookalikeAdvertisers" : [
+            "@asd",
+            "@asd",
+            "@asd",
+            "@asd",
+            "@asd"
+          ],
+          "advertisers" : [
+            "@asd",
+            "@asd",
+            "@asd",
+            "@asd"
+          ],
+          "doNotReachAdvertisers" : [ ],
+          "catalogAudienceAdvertisers" : [ ],
+          "numAudiences" : "999"
+        },
+        "shows" : [
+          "asd",
+          "asd"
+        ]
+      },
+      "locationHistory" : [ ],
+      "inferredAgeInfo" : {
+        "age" : [
+          "1-999"
+        ],
+        "birthDate" : ""
+      }
+    }
+  }
+]
