@@ -2,6 +2,7 @@ import json
 import uuid
 import datetime
 from json.decoder import JSONDecodeError
+from typing import Any
 
 import pandas as pd
 from pathlib import Path
@@ -38,7 +39,7 @@ def read_json_from_file(path_to_json: Path):
         return out
 
 
-def scan_json(path_to_json: Path) -> list[tuple]:
+def scan_json(path_to_json: Path) -> list[tuple[Any, ...]]:
     """
     Reads the contents of a json file and assembles it into a set of datapoints
     """
@@ -87,7 +88,7 @@ def scan_json(path_to_json: Path) -> list[tuple]:
                 )
 
     # Globals used by scan_json_inner
-    out = []
+    out: list[tuple[Any, ...]] = []
     last_modified = datetime.datetime.fromtimestamp(path_to_json.stat().st_mtime).isoformat()
 
     obj = read_json_from_file(path_to_json)

@@ -45,7 +45,8 @@ def scan_folder(foldername: Path) -> pd.DataFrame:
                 filedescription = magic.from_file(p)
                 mimetype = magic.from_file(p, mime=True)
             else:
-                filedescription = mimetype = None
+                filedescription = None
+                mimetype = None
 
             out.append(
                 (

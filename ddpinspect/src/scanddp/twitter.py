@@ -8,6 +8,7 @@ import json
 import io
 import re
 import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +17,7 @@ class ObjectIsNotADict(Exception):
     pass
 
 
-def twitter_bytesio_to_listdict(bytes_to_read: io.BytesIO) -> list[dict]:
+def twitter_bytesio_to_listdict(bytes_to_read: io.BytesIO) -> list[dict[Any, Any]]:
     """
     Converts a io.BytesIO buffer containing a twitter.js file, to a list of dicts
     """
@@ -45,7 +46,7 @@ def twitter_bytesio_to_listdict(bytes_to_read: io.BytesIO) -> list[dict]:
         return out
 
 
-def twitter_interests_from_listdict(interest_list: list[dict]) -> list:
+def twitter_interests_from_listdict(interest_list: list[dict[Any, Any]]) -> list[str]:
     """
     This function extracts twitter interests from a list[dict]
     This list[dict] should be obtained from personalization.js

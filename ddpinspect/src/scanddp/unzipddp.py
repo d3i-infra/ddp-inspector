@@ -50,7 +50,7 @@ def recursive_unzip(path_to_zip: Path, remove_source: bool = False) -> None:
         raise e
 
 
-def extract_file_from_zip(zfile: zipfile.ZipFile, file_to_extract: str) -> io.BytesIO:
+def extract_file_from_zip(zfile: str, file_to_extract: str) -> io.BytesIO:
     """
     Extracts a specific file from a zipfile buffer
     Function always returns a buffer
