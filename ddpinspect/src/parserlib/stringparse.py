@@ -3,7 +3,7 @@ import pandas as pd
 import ipaddress
 import warnings
 
-from examineddp.parserlib import urldetectionregex
+from parserlib import urldetectionregex
 
 import logging
 logger = logging.getLogger(__name__)

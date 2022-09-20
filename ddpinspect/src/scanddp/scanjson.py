@@ -6,7 +6,7 @@ from json.decoder import JSONDecodeError
 import pandas as pd
 from pathlib import Path
 
-from examineddp.parserlib import stringparse
+from parserlib import stringparse
 
 import logging
 logger = logging.getLogger(__name__)
