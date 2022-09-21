@@ -1,11 +1,16 @@
-import re
-import pandas as pd
+"""
+This module contains functions to classify strings found in data download packages
+"""
+
 import ipaddress
+import re
 import warnings
+import logging
+
+import pandas as pd
 
 from parserlib import urldetectionregex
 
-import logging
 
 logger = logging.getLogger(__name__)
 

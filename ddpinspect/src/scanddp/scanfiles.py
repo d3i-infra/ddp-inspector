@@ -2,18 +2,18 @@
 This module contains functions to scan the files contained inside a DDP
 """
 
-import datetime
-import magic
-import json
-import uuid
 from pathlib import Path
 from pathlib import PurePath
-import pandas as pd
 from typing import Any
+import logging
+import datetime
+import json
+import uuid
+
+import magic
+import pandas as pd
 
 from parserlib import stringparse
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ def read_json_from_file(path_to_json: Path):
     out = None
 
     try:
-        with open(path_to_json) as f:
+        with open(path_to_json, encoding="utf8") as f:
             out = json.load(f)
         logger.debug("succesfully opened: %s", path_to_json.name)
     except json.JSONDecodeError:

@@ -1,6 +1,7 @@
 """
 Contains functions to deal with zipfiles
 """
+
 from pathlib import Path
 import zipfile
 import time
@@ -13,7 +14,9 @@ logger = logging.getLogger(__name__)
 
 
 class FileNotFoundInZipError(Exception):
-    pass
+    """
+    The File you are looking for is not present in a zipfile
+    """
 
 
 def recursive_unzip(path_to_zip: Path, remove_source: bool = False) -> None:
