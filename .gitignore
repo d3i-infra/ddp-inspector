@@ -138,7 +138,5 @@ dmypy.json
 cython_debug/
 
 /Example_DDPs/**
+/example_ddps/**
 *.xlsx
-
-
-
