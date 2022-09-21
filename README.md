@@ -1,6 +1,6 @@
 # DDP-Inspector: Extract content from data download packages 
 
-![Tests](https://github.com/github/docs/actions/workflows/tests.yml/badge.svg)
+![Tests](https://github.com/d3i-infra/ddp-inspector/actions/workflows/tests.yml/badge.svg)
 
 
 This repo contains a python package: `ddpinspect` containing functions to examine the content structure from Data Download packages. This package will also contain modules to extract information out of data download packages from specific platforms.
