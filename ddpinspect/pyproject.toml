@@ -25,4 +25,7 @@ no_implicit_reexport = true
 good-names = ["f", "e", "df", "p", "k", "v", "zi", "zf"]
 
 [tool.pylint.'MESSAGES CONTROL']
-disable = ["C0301"]
+disable = ["C0301", "W0150", "W0703"] # long lines, finally, too general exception
+
+
+
