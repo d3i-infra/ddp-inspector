@@ -284,15 +284,17 @@ with zipfile.ZipFile("./Example_DDPs.zip", 'r') as zf:
 # Explore zip
 
 import logging
-FORMAT = "[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"
-logging.basicConfig(format=FORMAT)
-logging.basicConfig(level=logging.INFO)
+import io
 
 
-from examineddp.scanddp import unzipddp
-from examineddp.scanddp import twitter
+log_stream = io.StringIO()    
+logging.basicConfig(stream=log_stream, level=logging.INFO)
 
-twitter_zip = "./Example_DDPs/twitter/twitter-2022-09-08-7b4bc3e1887ddc4becc57fb106a7a4e86751b45fa7b18258909a2a52bd73af08.zip"
+
+from scanddp import unzipddp
+from scanddp import twitter
+
+twitter_zip = "./example_ddps/twitter/twitter-2022-09-08-7b4bc3e1887ddc4becc57fb106a7a4e86751b45fa7b18258909a2a52bd73af08.zip"
 
 # Happy flow
 my_bytes = unzipddp.extract_file_from_zip(twitter_zip, "personalization.js")  
@@ -300,12 +302,15 @@ my_dict = twitter.twitter_bytesio_to_listdict(my_bytes)
 check = twitter.twitter_interests_from_listdict(my_dict)
 check
 
+
 # Bad flow ,file not found
 my_bytes = unzipddp.extract_file_from_zip(twitter_zip, "personali.js")  
 my_dict = twitter.twitter_bytesio_to_listdict(my_bytes)
 check = twitter.twitter_interests_from_listdict(my_dict)
 check
 
+
+print(log_stream.getvalue())
 
 # Bad flow, file the file is a different file and an empty json
 my_bytes = unzipddp.extract_file_from_zip(twitter_zip, "contact.js")  
@@ -318,3 +323,6 @@ my_bytes = unzipddp.extract_file_from_zip(twitter_zip, "ad-impressions.js")
 my_dict = twitter.twitter_bytesio_to_listdict(my_bytes)
 check = twitter.twitter_interests_from_listdict(my_dict)
 check
+
+
+

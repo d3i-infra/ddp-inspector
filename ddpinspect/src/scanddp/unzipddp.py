@@ -10,13 +10,9 @@ import io
 
 import logging
 
+from scanddp.my_exceptions import FileNotFoundInZipError
+
 logger = logging.getLogger(__name__)
-
-
-class FileNotFoundInZipError(Exception):
-    """
-    The File you are looking for is not present in a zipfile
-    """
 
 
 def recursive_unzip(path_to_zip: Path, remove_source: bool = False) -> None:
@@ -66,6 +62,7 @@ def extract_file_from_zip(zfile: str, file_to_extract: str) -> io.BytesIO:
             file_found = False
 
             for f in zf.namelist():
+                logger.debug("Contained in zip: %s", f)
                 if Path(f).name == file_to_extract:
                     file_to_extract_bytes = io.BytesIO(zf.read(f))
                     file_found = True

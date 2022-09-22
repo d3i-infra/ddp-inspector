@@ -10,13 +10,9 @@ import re
 import logging
 from typing import Any
 
+from scanddp.my_exceptions import ObjectIsNotADict
+
 logger = logging.getLogger(__name__)
-
-
-class ObjectIsNotADict(Exception):
-    """
-    If object is not a dict raise this exception
-    """
 
 
 def twitter_bytesio_to_listdict(bytes_to_read: io.BytesIO) -> list[dict[Any, Any]]:
