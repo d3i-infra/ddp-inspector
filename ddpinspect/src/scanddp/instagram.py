@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 def instagram_bytesio_to_dict(bytes_to_read: io.BytesIO) -> dict[Any, Any]:
     """
-    Converts a io.BytesIO buffer containing an instagram json file, to a dict
+    Converts a io.BytesIO buffer containing an instagram json file to a dict
     """
 
     out = {}
@@ -24,9 +24,9 @@ def instagram_bytesio_to_dict(bytes_to_read: io.BytesIO) -> dict[Any, Any]:
         out = json.load(bytes_to_read)
 
     except json.decoder.JSONDecodeError as e:
-        logger.error("The input buffer did not contain a valid JSON:  %s", e)
+        logger.error("The input buffer did not contain a valid JSON: %s", e)
     except Exception as e:
-        logger.error("Exception was caught:  %s", e)
+        logger.error("Exception was caught: %s", e)
 
     finally:
         return out
@@ -55,9 +55,9 @@ def instagram_interests_to_list(dict_with_interests: dict[Any, Any]) -> list[str
             out.append(res[1]["value"])
 
     except ObjectIsNotADict as e:
-        logger.error("The input list did not contain a dict:  %s", e)
+        logger.error("The input list did not contain a dict: %s", e)
     except KeyError as e:
-        logger.error("The a dict did not contain the interests:  %s", e)
+        logger.error("The a dict did not contain the interests: %s", e)
     except Exception as e:
         logger.error("Exception was caught:  %s", e)
 

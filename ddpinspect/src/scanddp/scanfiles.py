@@ -4,7 +4,7 @@ This module contains functions to scan the files contained inside a DDP
 
 from pathlib import Path
 from pathlib import PurePath
-from typing import Any
+from typing import Any, Union
 import logging
 import datetime
 import json
@@ -18,12 +18,12 @@ from parserlib import stringparse
 logger = logging.getLogger(__name__)
 
 
-def read_json_from_file(path_to_json: Path):
+def read_json_from_file(path_to_json: Path) -> Union[dict[Any, Any], list[Any]]:
     """
     Reads json from file if succesful it returns the result from json.load()
     """
     path_to_json = Path(path_to_json)
-    out = None
+    out: Union[dict[Any, Any], list[Any]]
 
     try:
         with open(path_to_json, encoding="utf8") as f:
@@ -36,10 +36,12 @@ def read_json_from_file(path_to_json: Path):
             logger.debug("succesfully opened: %s", path_to_json.name)
         except Exception as e:
             logger.error("%s, could not open: %s", e, path_to_json)
+            raise e
     except Exception as e:
         logger.error("%s, could not open: %s", e, path_to_json)
-    finally:
-        return out
+        raise e
+
+    return out
 
 
 def scan_json(path_to_json: Path) -> list[tuple[Any, ...]]:

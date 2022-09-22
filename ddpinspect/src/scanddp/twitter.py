@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 def twitter_bytesio_to_listdict(bytes_to_read: io.BytesIO) -> list[dict[Any, Any]]:
     """
     Converts a io.BytesIO buffer containing a twitter.js file, to a list of dicts
+
+    A list of dicts is the current structure of twitter.js files
     """
 
     out = []
@@ -27,24 +29,24 @@ def twitter_bytesio_to_listdict(bytes_to_read: io.BytesIO) -> list[dict[Any, Any
         with io.TextIOWrapper(bytes_to_read, encoding="utf8") as f:
             lines = f.readlines()
 
-        # remove first and element from list
+        # change first line so its a valid json
         lines[0] = re.sub("^.*? = ", "", lines[0])
 
         # convert to a list of dicts
         out = json.loads("".join(lines))
 
     except json.decoder.JSONDecodeError as e:
-        logger.error("The input buffer did not contain a valid JSON:  %s", e)
+        logger.error("The input buffer did not contain a valid JSON: %s", e)
     except IndexError as e:
-        logger.error("No lines were read, could be empty input buffer:  %s", e)
+        logger.error("No lines were read, could be empty input buffer: %s", e)
     except Exception as e:
-        logger.error("Exception was caught:  %s", e)
+        logger.error("Exception was caught: %s", e)
 
     finally:
         return out
 
 
-def twitter_interests_from_listdict(interest_list: list[dict[Any, Any]]) -> list[str]:
+def twitter_interests_to_list(interest_list: list[dict[Any, Any]]) -> list[str]:
     """
     This function extracts twitter interests from a list[dict]
     This list[dict] should be obtained from personalization.js
@@ -66,13 +68,13 @@ def twitter_interests_from_listdict(interest_list: list[dict[Any, Any]]) -> list
         out = [d.get("name") for d in dict_with_interests]
 
     except IndexError as e:
-        logger.error("The input object is an empty list:  %s", e)
+        logger.error("The input object is an empty list: %s", e)
     except ObjectIsNotADict as e:
-        logger.error("The input list did not contain a dict:  %s", e)
+        logger.error("The input list did not contain a dict: %s", e)
     except KeyError as e:
-        logger.error("The a dict did not contain the interests:  %s", e)
+        logger.error("The a dict did not contain the interests: %s", e)
     except Exception as e:
-        logger.error("Exception was caught:  %s", e)
+        logger.error("Exception was caught: %s", e)
 
     finally:
         return out

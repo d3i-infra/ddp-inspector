@@ -287,12 +287,15 @@ import logging
 import io
 
 
-log_stream = io.StringIO()    
-logging.basicConfig(stream=log_stream, level=logging.INFO)
+#log to stream
+#log_stream = io.StringIO()    
+#logging.basicConfig(stream=log_stream, level=logging.INFO)
 
+logging.basicConfig(level=logging.INFO)
 
 from scanddp import unzipddp
 from scanddp import twitter
+
 
 twitter_zip = "./example_ddps/twitter/twitter-2022-09-08-7b4bc3e1887ddc4becc57fb106a7a4e86751b45fa7b18258909a2a52bd73af08.zip"
 
@@ -322,6 +325,35 @@ check
 my_bytes = unzipddp.extract_file_from_zip(twitter_zip, "ad-impressions.js")  
 my_dict = twitter.twitter_bytesio_to_listdict(my_bytes)
 check = twitter.twitter_interests_from_listdict(my_dict)
+check
+
+
+###################################################
+
+from scanddp import unzipddp
+from scanddp import instagram
+
+import logging 
+my_zip = "./example_ddps/instagram/turboknul_20220921.zip"
+
+logging.basicConfig(level=logging.DEBUG)
+
+# Happy flow
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "ads_interests.json")  
+my_dict = instagram.instagram_bytesio_to_dict(my_bytes)
+check = instagram.instagram_interests_to_list(my_dict)
+check
+
+
+# Bad flow
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "ads_erets.json")  
+my_dict = instagram.instagram_bytesio_to_dict(my_bytes)
+check = instagram.instagram_interests_to_list(my_dict)
+check
+
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "recent_follow_requests.json")  
+my_dict = instagram.instagram_bytesio_to_dict(my_bytes)
+check = instagram.instagram_interests_to_list(my_dict)
 check
 
 
