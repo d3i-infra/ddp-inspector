@@ -8,11 +8,131 @@ import json
 import io
 import re
 import logging
+import zipfile
+from pathlib import Path
 from typing import Any
 
 from scanddp.my_exceptions import ObjectIsNotADict
 
 logger = logging.getLogger(__name__)
+
+KNOWN_FILES_IN_TWITTER_ZIP = [
+    "manifest.js",
+    "account-creation-ip.js",
+    "account-label.js",
+    "account-suspension.js",
+    "account-timezone.js",
+    "account.js",
+    "ad-engagements.js",
+    "ad-free-article-visits.js",
+    "ad-impressions.js",
+    "ad-mobile-conversions-attributed.js",
+    "ad-mobile-conversions-unattributed.js",
+    "ad-online-conversions-attributed.js",
+    "ad-online-conversions-unattributed.js",
+    "ageinfo.js",
+    "app.js",
+    "birdwatch-note-rating.js",
+    "birdwatch-note-tombstone.js",
+    "birdwatch-note.js",
+    "block.js",
+    "branch-links.js",
+    "catalog-item.js",
+    "commerce-catalog.js",
+    "community-tweet.js",
+    "connected-application.js",
+    "contact.js",
+    "deleted-tweet.js",
+    "device-token.js",
+    "direct-message-group-headers.js",
+    "direct-message-headers.js",
+    "direct-message-mute.js",
+    "direct-messages-group.js",
+    "direct-messages.js",
+    "email-address-change.js",
+    "follower.js",
+    "following.js",
+    "ip-audit.js",
+    "like.js",
+    "lists-created.js",
+    "lists-member.js",
+    "lists-subscribed.js",
+    "moment.js",
+    "mute.js",
+    "ni-devices.js",
+    "periscope-account-information.js",
+    "periscope-ban-information.js",
+    "periscope-broadcast-metadata.js",
+    "periscope-comments-made-by-user.js",
+    "periscope-expired-broadcasts.js",
+    "periscope-followers.js",
+    "periscope-profile-description.js",
+    "personalization.js",
+    "phone-number.js",
+    "product-drop.js",
+    "product-set.js",
+    "professional-data.js",
+    "profile.js",
+    "protected-history.js",
+    "reply-prompt.js",
+    "saved-search.js",
+    "screen-name-change.js",
+    "shop-module.js",
+    "shopify-account.js",
+    "smartblock.js",
+    "spaces-metadata.js",
+    "sso.js",
+    "tweet.js",
+    "tweetdeck.js",
+    "twitter-circle-member.js",
+    "twitter-circle-tweet.js",
+    "twitter-circle.js",
+    "twitter-shop.js",
+    "user-link-clicks.js",
+    "verified.js",
+]
+
+
+def validate_twitter_zip(twitter_zip: Path) -> str:
+    """
+    Validates the input of a twitter zipfile
+
+    Checks whether the file is a zipfile and
+    Check whether at least 30% of known "*.js" files are present in the zip
+
+    3 mutually exclusive cases are possible
+    - Not a zip
+    - Not a recognized twitter zipfile
+    - A twitter zipfile
+    """
+
+    files_found_with_js_suffix = []
+    # Extract filnames from twitterzip and try if its a zipfile
+    try:
+        with zipfile.ZipFile(twitter_zip, "r") as zf:
+            for f in zf.namelist():
+                fp = Path(f)
+                if fp.suffix == ".js":
+                    files_found_with_js_suffix.append(fp.name)
+
+    except zipfile.BadZipFile:
+        return "The input file is not a zipfile"
+
+    # determine the percentage of known files in zipfile
+    try:
+        n_files_found = [
+            1 if f in files_found_with_js_suffix else 0
+            for f in KNOWN_FILES_IN_TWITTER_ZIP
+        ]
+        p_files_found = sum(n_files_found) / len(KNOWN_FILES_IN_TWITTER_ZIP) * 100
+
+        # 30% of the known files should be found
+        assert p_files_found >= 30
+
+    except AssertionError:
+        return "The input zipfile is not recognized as a twitter zipfile"
+
+    return "Valid twitter zipfile"
 
 
 def twitter_bytesio_to_listdict(bytes_to_read: io.BytesIO) -> list[dict[Any, Any]]:

@@ -28,3 +28,21 @@ def test_read_twitter_interests(file: str) -> None:
     assert (
         "Interest 1" and "Interest 2" in interests
     ), f"Interests were not found in {file}"
+
+
+@pytest.mark.parametrize(
+    "zipfile,expected",
+    [
+        ("twitter_2022_09_08.zip", "Valid twitter zipfile"),
+        ("ads_interests.json_2022_09_22", "The input file is not a zipfile"),
+        ("empty.zip", "The input zipfile is not recognized as a twitter zipfile"),
+    ],
+)
+def test_validate_twitter_zip(zipfile: str, expected: str) -> None:
+    """
+    Check if twitter.js file is read correctly
+    and if interests are identified
+    """
+
+    result = twitter.validate_twitter_zip(DATA_DIR / zipfile)
+    assert result == expected
