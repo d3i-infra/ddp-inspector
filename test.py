@@ -357,4 +357,44 @@ check = instagram.instagram_interests_to_list(my_dict)
 check
 
 
+###################################################
 
+from scanddp import scanfiles
+import logging 
+
+my_folder = "./example_ddps/instagram/turboknul_20220921/"
+
+logging.basicConfig(level=logging.DEBUG)
+
+dir(scanfiles)
+
+# Happy flow
+result = my_bytes = scanfiles.flatten_json_all(my_folder)
+result
+
+
+###################################################
+
+from pathlib import Path
+
+my_folder = "./example_ddps/instagram/turboknul_20220921/"
+my_fer = "./exapedp/ntrm/turboknul_20220921/"
+
+yay = Path(my_folder)
+nay = Path(my_fer)
+
+
+def path_exists(p: Path) -> None:
+    """ Checks if path exists """
+    if p.exists():
+        return None
+    else :
+        raise FileNotFoundError(f"Path: {p} does not exists")
+
+
+def asd(folder: Path):
+    path_exists(folder)
+    return "ASD"
+
+
+asd(nay)

@@ -5,8 +5,9 @@ This module contains functions to scan the files contained inside a DDP
 from pathlib import Path
 from pathlib import PurePath
 from typing import Any, Union
+from datetime import datetime
+from dataclasses import dataclass, asdict
 import logging
-import datetime
 import json
 import uuid
 
@@ -16,6 +17,45 @@ import pandas as pd
 from parserlib import stringparse
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class JsonItemDescription:
+    """
+    Class containing the description of Json items
+    """
+
+    name: str
+    object_id: str
+    parent_id: str
+    object_type: str
+    object_value: str
+    is_ip: bool | None
+    is_time: bool | None
+    is_url: bool | None
+
+
+@dataclass(frozen=True)
+class FileDescription:
+    """
+    Class containing the description of files
+    """
+
+    name: str
+    parent: str
+    suffix: str
+    is_directory: bool
+    modification_time: str
+    file_size: int
+    file_description: str | None
+    mime_type: str | None
+
+
+def path_exists(p: Path) -> None:
+    """Checks if path exists"""
+    if p.exists():
+        return None
+    raise FileNotFoundError(f"Path: {p} does not exists")
 
 
 def read_json_from_file(path_to_json: Path) -> Union[dict[Any, Any], list[Any]]:
@@ -29,6 +69,7 @@ def read_json_from_file(path_to_json: Path) -> Union[dict[Any, Any], list[Any]]:
         with open(path_to_json, encoding="utf8") as f:
             out = json.load(f)
         logger.debug("succesfully opened: %s", path_to_json.name)
+
     except json.JSONDecodeError:
         try:
             with open(path_to_json, encoding="utf-8-sig") as f:
@@ -37,6 +78,7 @@ def read_json_from_file(path_to_json: Path) -> Union[dict[Any, Any], list[Any]]:
         except Exception as e:
             logger.error("%s, could not open: %s", e, path_to_json)
             raise e
+
     except Exception as e:
         logger.error("%s, could not open: %s", e, path_to_json)
         raise e
@@ -44,104 +86,106 @@ def read_json_from_file(path_to_json: Path) -> Union[dict[Any, Any], list[Any]]:
     return out
 
 
-def scan_json(path_to_json: Path) -> list[tuple[Any, ...]]:
+def flatten_nested_dict(
+    obj: Any, name: str, parent_id: str, out: list[JsonItemDescription]
+) -> list[JsonItemDescription]:
     """
-    Reads the contents of a json file and assembles it into a set of datapoints
-
-    This function denests a json and assembles each entry into a data-point (tuple)
+    Recursive function that flattens a nested dict (resulting from json.load(s))
+    Returns the flat items in the JSON and classifies them
     """
 
-    # scan_json_inner use the variables: out, and last_modified, they are gobal to the outerscope
-    def scan_json_inner(obj, name: str, parent: str) -> None:
+    object_id = uuid.uuid4().hex
+    is_ip = is_time = is_url = None
 
-        objtype = type(obj)
-        objid = uuid.uuid4().hex
-        is_ip = is_time = is_url = None
+    if isinstance(obj, dict):
+        obj = dict(sorted(obj.items()))
+        object_value = ":".join([str(k) for k in obj.keys()])
+        for k, v in obj.items():
+            flatten_nested_dict(obj=v, name=str(k), parent_id=object_id, out=out)
 
-        if objtype == dict:
-            obj = dict(sorted(obj.items()))
-            info = ":".join(obj.keys())
-            for k, v in obj.items():
-                scan_json_inner(v, k, objid)
-
-        elif objtype == list:
-            info = "list object"
-            for index, item in enumerate(obj):
-                scan_json_inner(item, f"{name}_{index}", objid)
-
-        elif objtype == str:
-            info = obj
-
-            is_ip = stringparse.is_ipaddress(obj)
-            is_time = stringparse.is_timestamp(obj)
-            is_url = stringparse.has_url(obj)
-
-        else:
-            info = obj
-
-        out.append(
-            (
-                path_to_json.name,
-                last_modified,
-                name,
-                objid,
-                parent,
-                str(objtype),
-                info,
-                is_ip,
-                is_time,
-                is_url,
+    elif isinstance(obj, list):
+        object_value = "List"
+        for index, item in enumerate(obj):
+            flatten_nested_dict(
+                obj=item, name=f"{name}_{index}", parent_id=object_id, out=out
             )
+
+    elif isinstance(obj, str):
+        object_value = obj
+        is_ip = stringparse.is_ipaddress(obj)
+        is_time = stringparse.is_timestamp(obj)
+        is_url = stringparse.has_url(obj)
+
+    else:
+        object_value = str(obj)
+
+    out.append(
+        JsonItemDescription(
+            name,
+            object_id,
+            parent_id,
+            type(obj).__name__,
+            object_value,
+            is_ip,
+            is_time,
+            is_url,
         )
+    )
 
-    # Globals used by scan_json_inner
-    out: list[tuple[Any, ...]] = []
-    last_modified = datetime.datetime.fromtimestamp(
-        path_to_json.stat().st_mtime
-    ).isoformat()
+    return list(reversed(out))
 
-    obj = read_json_from_file(path_to_json)
-    if obj:
-        scan_json_inner(obj, "toplevel", "")
+
+def flatten_json(path_to_json: Path) -> dict[str, Any]:
+    """
+    Returns flattened json
+    """
+
+    path_to_json = Path(path_to_json)
+    path_exists(path_to_json)
+
+    last_modified = datetime.fromtimestamp(path_to_json.stat().st_mtime).isoformat()
+
+    json_obj = read_json_from_file(path_to_json)
+    json_items = flatten_nested_dict(json_obj, "toplevel", "", [])
+
+    out = {
+        "name": path_to_json.name,
+        "last_modified": last_modified,
+        "json_items": json_items,
+    }
 
     return out
 
 
-def scan_json_all(foldername: Path) -> pd.DataFrame:
+def flatten_json_all(foldername: Path) -> pd.DataFrame:
+
     """
     Reads contents of all json files in a folder recursively
     Returns a pandas dataframe
     """
 
     foldername = Path(foldername)
-    try:
-        assert foldername.exists(), f"{foldername.name} does not exist"
-        assert foldername.is_dir(), f"{foldername.name} is not a directory"
-    except AssertionError as e:
-        logger.critical(e)
-        raise e
+    path_exists(foldername)
 
     try:
         out = []
         paths = foldername.glob("**/*.json")
-        for p in paths:
-            out.extend(scan_json(p))
 
-        df = pd.DataFrame(
-            out,
-            columns=[
-                "filename",
-                "last_modified",
-                "name",
-                "objid",
-                "parent",
-                "objtype",
-                "info",
-                "is_ip",
-                "is_time",
-                "is_url",
-            ],
-        )
+        # For all jsons in folder: flatten them and assemble in pandas df
+        for p in paths:
+            json_flat = flatten_json(p)
+            json_items = [asdict(item) for item in json_flat["json_items"]]
+            for d in json_items:
+                d.update(
+                    {
+                        "filename": json_flat["name"],
+                        "last_modified": json_flat["last_modified"],
+                    }
+                )
+
+            out.extend(json_items)
+
+        df = pd.DataFrame(out)
 
         return df
 
@@ -150,54 +194,45 @@ def scan_json_all(foldername: Path) -> pd.DataFrame:
         raise e
 
 
-def scan_all_files(foldername: Path) -> pd.DataFrame:
+def scan_files_all(foldername: Path) -> pd.DataFrame:
     """
     Recursively examines all files in folder
     and collects meta data about that file
     """
 
+    file_descriptions = []
     foldername = Path(foldername)
-    try:
-        assert foldername.exists(), f"{foldername.name} does not exist"
-        assert foldername.is_dir(), f"{foldername.name} is not a directory"
-    except AssertionError as e:
-        logger.critical(e)
-        raise e
+    path_exists(foldername)
 
-    out = []
-    paths = Path(foldername).glob("**/*")
+    paths = foldername.glob("**/*")
     for p in paths:
         try:
             name = p.name
             parent = str(PurePath(p.parent).relative_to(foldername.parent))
             suffix = " ".join(p.suffixes)
-            isdir = p.is_dir()
+            is_directory = p.is_dir()
 
             # Obtain file statistics
             filestats = p.stat()
-            mtime = datetime.datetime.fromtimestamp(filestats.st_mtime).isoformat()
+            modification_time = datetime.fromtimestamp(filestats.st_mtime).isoformat()
+            file_size = filestats.st_size
 
-            filesize = filestats.st_size
+            # Magic is equivalent to the unix "file" command
+            file_description = mime_type = None
+            if not is_directory:
+                file_description = magic.from_file(p)
+                mime_type = magic.from_file(p, mime=True)
 
-            # Examine files with python package: magic
-            # Equivalent to the unix "file" command
-            if not isdir:
-                filedescription = magic.from_file(p)
-                mimetype = magic.from_file(p, mime=True)
-            else:
-                filedescription = None
-                mimetype = None
-
-            out.append(
-                (
+            file_descriptions.append(
+                FileDescription(
                     name,
                     parent,
                     suffix,
-                    isdir,
-                    mtime,
-                    filesize,
-                    filedescription,
-                    mimetype,
+                    is_directory,
+                    modification_time,
+                    file_size,
+                    file_description,
+                    mime_type,
                 )
             )
 
@@ -206,17 +241,5 @@ def scan_all_files(foldername: Path) -> pd.DataFrame:
             logger.error("%s, could not examine file/folder %s", e, p)
             raise e
 
-    df = pd.DataFrame(
-        out,
-        columns=[
-            "name",
-            "parent",
-            "suffix",
-            "is_dir",
-            "last_modified",
-            "file_size",
-            "file_description",
-            "mimetype",
-        ],
-    )
+    df = pd.DataFrame([asdict(fd) for fd in file_descriptions])
     return df

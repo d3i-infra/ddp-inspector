@@ -22,10 +22,10 @@ warn_unused_configs = true
 no_implicit_reexport = true
 
 [tool.pylint.BASIC]
-good-names = ["f", "fp", "e", "df", "p", "k", "v", "zi", "zf"]
+good-names = ["f", "d", "fp", "e", "df", "p", "k", "v", "zi", "zf"]
 
 [tool.pylint.'MESSAGES CONTROL']
-disable = ["C0301", "R0801", "W0150", "W0703"] # long lines, similarcode, finally, too general exception
+disable = ["C0301", "R0801", "W0150", "W0703", "R0902"] 
 
 
 
