@@ -4,96 +4,130 @@ DDP Twitter module
 This module contains functions to handle *.js files contained within a twitter ddp
 """
 
+from pathlib import Path
+from typing import Any
+from dataclasses import dataclass, field
 import json
 import io
 import re
 import logging
 import zipfile
-from pathlib import Path
-from typing import Any
 
 from scanddp.my_exceptions import ObjectIsNotADict
 
 logger = logging.getLogger(__name__)
 
-KNOWN_FILES_IN_TWITTER_ZIP = [
-    "manifest.js",
-    "account-creation-ip.js",
-    "account-label.js",
-    "account-suspension.js",
-    "account-timezone.js",
-    "account.js",
-    "ad-engagements.js",
-    "ad-free-article-visits.js",
-    "ad-impressions.js",
-    "ad-mobile-conversions-attributed.js",
-    "ad-mobile-conversions-unattributed.js",
-    "ad-online-conversions-attributed.js",
-    "ad-online-conversions-unattributed.js",
-    "ageinfo.js",
-    "app.js",
-    "birdwatch-note-rating.js",
-    "birdwatch-note-tombstone.js",
-    "birdwatch-note.js",
-    "block.js",
-    "branch-links.js",
-    "catalog-item.js",
-    "commerce-catalog.js",
-    "community-tweet.js",
-    "connected-application.js",
-    "contact.js",
-    "deleted-tweet.js",
-    "device-token.js",
-    "direct-message-group-headers.js",
-    "direct-message-headers.js",
-    "direct-message-mute.js",
-    "direct-messages-group.js",
-    "direct-messages.js",
-    "email-address-change.js",
-    "follower.js",
-    "following.js",
-    "ip-audit.js",
-    "like.js",
-    "lists-created.js",
-    "lists-member.js",
-    "lists-subscribed.js",
-    "moment.js",
-    "mute.js",
-    "ni-devices.js",
-    "periscope-account-information.js",
-    "periscope-ban-information.js",
-    "periscope-broadcast-metadata.js",
-    "periscope-comments-made-by-user.js",
-    "periscope-expired-broadcasts.js",
-    "periscope-followers.js",
-    "periscope-profile-description.js",
-    "personalization.js",
-    "phone-number.js",
-    "product-drop.js",
-    "product-set.js",
-    "professional-data.js",
-    "profile.js",
-    "protected-history.js",
-    "reply-prompt.js",
-    "saved-search.js",
-    "screen-name-change.js",
-    "shop-module.js",
-    "shopify-account.js",
-    "smartblock.js",
-    "spaces-metadata.js",
-    "sso.js",
-    "tweet.js",
-    "tweetdeck.js",
-    "twitter-circle-member.js",
-    "twitter-circle-tweet.js",
-    "twitter-circle.js",
-    "twitter-shop.js",
-    "user-link-clicks.js",
-    "verified.js",
-]
+
+@dataclass
+class ValidateTwitterInput:
+    """
+    Class containing data regarding input checking an Twitter zipfile for correctness
+    """
+    status_code: int = 0
+    status_message: dict[int, dict[str, str]] = field(
+        default_factory=lambda: {
+            0: {
+                "description": "Valid Twitter zipfile",
+                "message": "Valid Twitter zipfile",
+            },
+            1: {
+                "description": "Bad zipfile",
+                "message": "We could not detect a zipfile could you recheck your selected file?",
+            },
+            2: {
+                "description": "Not a Twitter zipfile",
+                "message": "We could not detect a zipfile from Twitter could you recheck your selected file?",
+            }
+        }
+    )
+    known_files: list[str] = field(
+        default_factory=lambda: [
+            "manifest.js",
+            "account-creation-ip.js",
+            "account-label.js",
+            "account-suspension.js",
+            "account-timezone.js",
+            "account.js",
+            "ad-engagements.js",
+            "ad-free-article-visits.js",
+            "ad-impressions.js",
+            "ad-mobile-conversions-attributed.js",
+            "ad-mobile-conversions-unattributed.js",
+            "ad-online-conversions-attributed.js",
+            "ad-online-conversions-unattributed.js",
+            "ageinfo.js",
+            "app.js",
+            "birdwatch-note-rating.js",
+            "birdwatch-note-tombstone.js",
+            "birdwatch-note.js",
+            "block.js",
+            "branch-links.js",
+            "catalog-item.js",
+            "commerce-catalog.js",
+            "community-tweet.js",
+            "connected-application.js",
+            "contact.js",
+            "deleted-tweet.js",
+            "device-token.js",
+            "direct-message-group-headers.js",
+            "direct-message-headers.js",
+            "direct-message-mute.js",
+            "direct-messages-group.js",
+            "direct-messages.js",
+            "email-address-change.js",
+            "follower.js",
+            "following.js",
+            "ip-audit.js",
+            "like.js",
+            "lists-created.js",
+            "lists-member.js",
+            "lists-subscribed.js",
+            "moment.js",
+            "mute.js",
+            "ni-devices.js",
+            "periscope-account-information.js",
+            "periscope-ban-information.js",
+            "periscope-broadcast-metadata.js",
+            "periscope-comments-made-by-user.js",
+            "periscope-expired-broadcasts.js",
+            "periscope-followers.js",
+            "periscope-profile-description.js",
+            "personalization.js",
+            "phone-number.js",
+            "product-drop.js",
+            "product-set.js",
+            "professional-data.js",
+            "profile.js",
+            "protected-history.js",
+            "reply-prompt.js",
+            "saved-search.js",
+            "screen-name-change.js",
+            "shop-module.js",
+            "shopify-account.js",
+            "smartblock.js",
+            "spaces-metadata.js",
+            "sso.js",
+            "tweet.js",
+            "tweetdeck.js",
+            "twitter-circle-member.js",
+            "twitter-circle-tweet.js",
+            "twitter-circle.js",
+            "twitter-shop.js",
+            "user-link-clicks.js",
+            "verified.js",
+        ]
+    )
+
+    def get_status_message(self) -> str:
+        """ returns code message, can be shown to user """
+        return self.status_message.get(self.status_code, {}).get("message", "Not defined")
+
+    def get_status_description(self) -> str:
+        """ returns description, can be shown to debug """
+        return self.status_message.get(self.status_code, {}).get("description", "Not defined")
 
 
-def validate_twitter_zip(twitter_zip: Path) -> str:
+def validate_twitter_zip(twitter_zip: Path) -> ValidateTwitterInput:
     """
     Validates the input of a twitter zipfile
 
@@ -106,6 +140,8 @@ def validate_twitter_zip(twitter_zip: Path) -> str:
     - A twitter zipfile
     """
 
+    validate = ValidateTwitterInput()
+
     files_found_with_js_suffix = []
     # Extract filnames from twitterzip and try if its a zipfile
     try:
@@ -116,23 +152,22 @@ def validate_twitter_zip(twitter_zip: Path) -> str:
                     files_found_with_js_suffix.append(fp.name)
 
     except zipfile.BadZipFile:
-        return "The input file is not a zipfile"
+        validate.status_code = 1
+        return validate
 
     # determine the percentage of known files in zipfile
-    try:
-        n_files_found = [
-            1 if f in files_found_with_js_suffix else 0
-            for f in KNOWN_FILES_IN_TWITTER_ZIP
-        ]
-        p_files_found = sum(n_files_found) / len(KNOWN_FILES_IN_TWITTER_ZIP) * 100
+    n_files_found = [
+        1 if f in files_found_with_js_suffix else 0
+        for f in validate.known_files
+    ]
+    p_files_found = sum(n_files_found) / len(validate.known_files) * 100
 
-        # 30% of the known files should be found
-        assert p_files_found >= 30
+    # 30% of the known files should be found
+    if p_files_found <= 30:
+        validate.status_code = 2
+        return validate
 
-    except AssertionError:
-        return "The input zipfile is not recognized as a twitter zipfile"
-
-    return "Valid twitter zipfile"
+    return validate
 
 
 def twitter_bytesio_to_listdict(bytes_to_read: io.BytesIO) -> list[dict[Any, Any]]:

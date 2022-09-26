@@ -369,9 +369,13 @@ logging.basicConfig(level=logging.DEBUG)
 dir(scanfiles)
 
 # Happy flow
-result = my_bytes = scanfiles.flatten_json_all(my_folder)
-result
+scanfiles.flatten_json_all(my_folder)
+scanfiles.scan_files_all(my_folder)
 
+
+# Bad flow
+my_folder = "./example_ddps/instagram/turboknul_201/"
+scanfiles.scan_files_all(my_folder)
 
 ###################################################
 
@@ -392,9 +396,49 @@ def path_exists(p: Path) -> None:
         raise FileNotFoundError(f"Path: {p} does not exists")
 
 
-def asd(folder: Path):
-    path_exists(folder)
-    return "ASD"
+
+###################################################
+# your_topics
+
+from scanddp import instagram
+from scanddp import unzipddp
+
+import logging 
+my_zip = "./example_ddps/instagram/turboknul_20220921.zip"
+
+logging.basicConfig(level=logging.DEBUG)
+
+# Happy flow
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "your_topics.json")  
+my_dict = instagram.instagram_bytesio_to_dict(my_bytes)
+check = instagram.instagram_your_topics_to_list(my_dict)
+check
 
 
-asd(nay)
+
+
+###################################################
+
+from scanddp import instagram
+
+my_zip = "./example_ddps/instagram/turboknul_20220921.zip"
+my_zip = "./example_ddps/instagram/turboknul_20220926_html.zip"
+x = instagram.validate_instagram_zip(my_zip)
+x.get_status_message()
+x.get_status_description()
+x.status_code = 123
+
+
+
+###################################################
+
+from scanddp import twitter
+
+my_zip = "./example_ddps/twitter/twitter-2022-09-08-7b4bc3e1887ddc4becc57fb106a7a4e86751b45fa7b18258909a2a52bd73af08.zip"
+my_zip = "./example_ddps/instagram/turboknul_20220926_html.zip"
+x = twitter.validate_twitter_zip(my_zip)
+x.get_status_message()
+x.get_status_description()
+
+
+
