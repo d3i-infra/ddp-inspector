@@ -63,3 +63,35 @@ def instagram_interests_to_list(dict_with_interests: dict[Any, Any]) -> list[str
 
     finally:
         return out
+
+
+
+def instagram_your_topics_to_list(dict_with_topics: dict[Any, Any]) -> list[str]:
+    """
+    This function extracts instagram your_topics from a dict
+    This dict should be obtained from your_topics.json
+
+    This function should be rewritten as your_topics.json changes
+    """
+    out = []
+
+    try:
+        if not isinstance(dict_with_topics, dict):
+            raise ObjectIsNotADict("The input to this function was not dict")
+
+        # The compleet lookup is:
+        # "topics_your_topics" -> "string_map_data" -> "Name" -> "value"
+        for item in dict_with_topics["topics_your_topics"]:
+            res = item["string_map_data"].popitem()
+            out.append(res[1]["value"])
+
+    except ObjectIsNotADict as e:
+        logger.error("The input list did not contain a dict: %s", e)
+    except KeyError as e:
+        logger.error("The a dict did not contain the interests: %s", e)
+    except Exception as e:
+        logger.error("Exception was caught:  %s", e)
+
+    finally:
+        return out
+

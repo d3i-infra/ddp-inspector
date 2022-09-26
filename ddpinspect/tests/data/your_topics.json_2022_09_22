@@ -1,0 +1,30 @@
+{
+  "topics_your_topics": [
+    {
+      "title": "",
+      "media_map_data": {
+        
+      },
+      "string_map_data": {
+        "Name": {
+          "href": "",
+          "value": "Topic 1",
+          "timestamp": 0
+        }
+      }
+    },
+    {
+      "title": "",
+      "media_map_data": {
+        
+      },
+      "string_map_data": {
+        "Name": {
+          "href": "",
+          "value": "Topic 2",
+          "timestamp": 0
+        }
+      }
+    }
+  ]
+}
