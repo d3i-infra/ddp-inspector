@@ -9,10 +9,21 @@ from scanddp import instagram
 DATA_DIR = Path(__file__).resolve().parent / "data"
 
 
-@pytest.mark.parametrize("fun_to_test,file,result", [
-    ("instagram_interests_to_list", "ads_interests.json_2022_09_22", ["Interest 1", "Interest 2"]),
-    ("instagram_your_topics_to_list", "your_topics.json_2022_09_22", ["Topic 1", "Topic 2"])
-    ])
+@pytest.mark.parametrize(
+    "fun_to_test,file,result",
+    [
+        (
+            "instagram_interests_to_list",
+            "ads_interests.json_2022_09_22",
+            ["Interest 1", "Interest 2"],
+        ),
+        (
+            "instagram_your_topics_to_list",
+            "your_topics.json_2022_09_22",
+            ["Topic 1", "Topic 2"],
+        ),
+    ],
+)
 def test_instagram_function(fun_to_test: str, file: str, result: list) -> None:
     """
     Check if ads_interests.json file from instagram ddp is read correctly

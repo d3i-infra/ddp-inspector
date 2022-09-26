@@ -57,13 +57,12 @@ def instagram_interests_to_list(dict_with_interests: dict[Any, Any]) -> list[str
     except ObjectIsNotADict as e:
         logger.error("The input list did not contain a dict: %s", e)
     except KeyError as e:
-        logger.error("The a dict did not contain the interests: %s", e)
+        logger.error("The a dict did not contain key: %s", e)
     except Exception as e:
         logger.error("Exception was caught:  %s", e)
 
     finally:
         return out
-
 
 
 def instagram_your_topics_to_list(dict_with_topics: dict[Any, Any]) -> list[str]:
@@ -88,10 +87,9 @@ def instagram_your_topics_to_list(dict_with_topics: dict[Any, Any]) -> list[str]
     except ObjectIsNotADict as e:
         logger.error("The input list did not contain a dict: %s", e)
     except KeyError as e:
-        logger.error("The a dict did not contain the interests: %s", e)
+        logger.error("The a dict did not contain the key: %s", e)
     except Exception as e:
         logger.error("Exception was caught:  %s", e)
 
     finally:
         return out
-
