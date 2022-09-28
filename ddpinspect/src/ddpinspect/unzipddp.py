@@ -10,7 +10,7 @@ import io
 
 import logging
 
-from scanddp.my_exceptions import FileNotFoundInZipError
+from ddpinspect.my_exceptions import FileNotFoundInZipError
 
 logger = logging.getLogger(__name__)
 

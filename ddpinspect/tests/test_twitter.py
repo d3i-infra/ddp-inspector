@@ -4,7 +4,7 @@ Tests test the functionality of the twitter module
 
 import pytest
 from pathlib import Path
-from scanddp import twitter
+from ddpinspect import twitter
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
 

@@ -4,7 +4,7 @@ Tests test the functionality of the instagram module
 
 import pytest
 from pathlib import Path
-from scanddp import instagram
+from ddpinspect import instagram
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
 

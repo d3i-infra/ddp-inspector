@@ -13,7 +13,7 @@ import re
 import logging
 import zipfile
 
-from scanddp.my_exceptions import ObjectIsNotADict
+from ddpinspect.my_exceptions import ObjectIsNotADict
 
 logger = logging.getLogger(__name__)
 

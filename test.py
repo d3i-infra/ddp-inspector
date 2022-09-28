@@ -5,9 +5,9 @@
 import logging
 logging.basicConfig(level=logging.INFO)
 
-from examineddp.scanddp import scanfolder
-from examineddp.scanddp import scanjson
-from examineddp.scanddp import unzipddp
+from ddpinspect import scanfolder
+from ddpinspect import scanjson
+from ddpinspect import unzipddp
 
 # unzip folder leaving the folder structure in tact
 unzipddp.recursive_unzip("./Example_DDPs.zip")
@@ -45,7 +45,7 @@ example = Path("Example_DDPs/Instagram_data_zenodo/horsesarecool52_20201020/acco
 example = "Example_DDPs/Instagram_data_zenodo/horsesarecool52_20201020/media.json"
 example = "Example_DDPs/Instagram_data_zenodo/horsesarecool52_20201020/searches.json"
 
-from examineddp.scanddp import scanjson
+from examineddp.ddpinspect import scanjson
 importlib.reload(scanjson)
 out = scanjson.get_structure_json(example)
 out = scanjson.get_structure_json("example")
@@ -114,7 +114,7 @@ pd.to_datetime("")
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
-from examineddp.scanddp import scanfolder
+from examineddp.ddpinspect import scanfolder
 importlib.reload(scanfolder)
 
 example = "./Example_DDPs/Google_Search_History/"
@@ -127,7 +127,7 @@ import logging
 import importlib
 logging.basicConfig(level=logging.INFO)
 
-from examineddp.scanddp import scanjson
+from examineddp.ddpinspect import scanjson
 importlib.reload(scanjson)
 
 example = "./Example_DDPs/Google_Search_History/"
@@ -218,7 +218,7 @@ if test:
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
-from examineddp.scanddp import scanjson
+from examineddp.ddpinspect import scanjson
 
 example = "Example_DDPs/Example_DDPs/Instagram_data_zenodo/horsesarecool52_20201020/settings.json"
 check = "Example_DDPs/Example_DDPs/Instagram_data_zenodo/katsaremeow_20201020/uploaded_contacts.json"
@@ -293,8 +293,8 @@ import io
 
 logging.basicConfig(level=logging.INFO)
 
-from scanddp import unzipddp
-from scanddp import twitter
+from ddpinspect import unzipddp
+from ddpinspect import twitter
 
 
 twitter_zip = "./example_ddps/twitter/twitter-2022-09-08-7b4bc3e1887ddc4becc57fb106a7a4e86751b45fa7b18258909a2a52bd73af08.zip"
@@ -330,8 +330,8 @@ check
 
 ###################################################
 
-from scanddp import unzipddp
-from scanddp import instagram
+from ddpinspect import unzipddp
+from ddpinspect import instagram
 
 import logging 
 my_zip = "./example_ddps/instagram/turboknul_20220921.zip"
@@ -359,7 +359,7 @@ check
 
 ###################################################
 
-from scanddp import scanfiles
+from ddpinspect import scanfiles
 import logging 
 
 my_folder = "./example_ddps/instagram/turboknul_20220921/"
@@ -400,8 +400,8 @@ def path_exists(p: Path) -> None:
 ###################################################
 # your_topics
 
-from scanddp import instagram
-from scanddp import unzipddp
+from ddpinspect import instagram
+from ddpinspect import unzipddp
 
 import logging 
 my_zip = "./example_ddps/instagram/turboknul_20220921.zip"
@@ -419,7 +419,7 @@ check
 
 ###################################################
 
-from scanddp import instagram
+from ddpinspect import instagram
 
 my_zip = "./example_ddps/instagram/turboknul_20220921.zip"
 my_zip = "./example_ddps/instagram/turboknul_20220926_html.zip"
@@ -432,13 +432,47 @@ x.status_code = 123
 
 ###################################################
 
-from scanddp import twitter
+from ddpinspect import twitter
+dir(twitter)
 
 my_zip = "./example_ddps/twitter/twitter-2022-09-08-7b4bc3e1887ddc4becc57fb106a7a4e86751b45fa7b18258909a2a52bd73af08.zip"
-my_zip = "./example_ddps/instagram/turboknul_20220926_html.zip"
-x = twitter.validate_twitter_zip(my_zip)
-x.get_status_message()
-x.get_status_description()
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "personalization.js")
+my_dict = twitter.bytesio_to_listdict(my_bytes)
+check = twitter.interests_to_list(my_dict)
+check 
 
 
+###################################################
+
+import csv
+import io
+from ddpinspect import unzipddp
+import pandas as pd
+
+my_zip = "./example_ddps/youtube/takeout-20220921T133717Z-001.zip"
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "subscriptions.csv")
+with io.TextIOWrapper(my_bytes, encoding="utf8") as b:
+    reader = csv.DictReader(b)
+    for row in reader:
+        print(row['Channel Title'])
+
+
+
+###################################################
+
+from ddpinspect import unzipddp
+
+import logging 
+import json 
+logging.basicConfig(level=logging.DEBUG)
+
+my_zip = "./example_ddps/youtube/takeout-20220921T133717Z-001.zip"
+
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "watch-history.json")
+with my_bytes as b:
+    out = json.load(b)
+    
+len(out)
+
+###################################################
 
