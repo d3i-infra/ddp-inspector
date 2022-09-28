@@ -12,19 +12,19 @@ DATA_DIR = Path(__file__).resolve().parent / "data"
 @pytest.mark.parametrize("file", ["personalization.js_2022_09_20"])
 def test_read_twitter_interests(file: str) -> None:
     """
-    Check if twitter.js file is read correctly
+    Test if twitter.js file is read correctly
     and if interests are identified
     """
 
     f_to_check = DATA_DIR / file
     with open(f_to_check, "rb") as f:
-        interests_listdict = twitter.twitter_bytesio_to_listdict(f)
+        interests_listdict = twitter.bytesio_to_listdict(f)
 
     assert (
         len(interests_listdict) != 0
     ), f"{file} did not produce output, list should not be empty"
 
-    interests = twitter.twitter_interests_to_list(interests_listdict)
+    interests = twitter.interests_to_list(interests_listdict)
     assert (
         "Interest 1" and "Interest 2" in interests
     ), f"Interests were not found in {file}"
@@ -40,9 +40,8 @@ def test_read_twitter_interests(file: str) -> None:
 )
 def test_validate_twitter_zip(zipfile: str, expected: str) -> None:
     """
-    Check if twitter.js file is read correctly
-    and if interests are identified
+    Test the input validation for a twitter.zip
     """
 
-    result = twitter.validate_twitter_zip(DATA_DIR / zipfile)
+    result = twitter.validate_zip(DATA_DIR / zipfile)
     assert result.get_status_description() == expected

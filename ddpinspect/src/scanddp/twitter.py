@@ -127,7 +127,7 @@ class ValidateTwitterInput:
         return self.status_message.get(self.status_code, {}).get("description", "Not defined")
 
 
-def validate_twitter_zip(twitter_zip: Path) -> ValidateTwitterInput:
+def validate_zip(zfile: Path) -> ValidateTwitterInput:
     """
     Validates the input of a twitter zipfile
 
@@ -145,7 +145,7 @@ def validate_twitter_zip(twitter_zip: Path) -> ValidateTwitterInput:
     files_found_with_js_suffix = []
     # Extract filnames from twitterzip and try if its a zipfile
     try:
-        with zipfile.ZipFile(twitter_zip, "r") as zf:
+        with zipfile.ZipFile(zfile, "r") as zf:
             for f in zf.namelist():
                 fp = Path(f)
                 if fp.suffix == ".js":
@@ -170,7 +170,7 @@ def validate_twitter_zip(twitter_zip: Path) -> ValidateTwitterInput:
     return validate
 
 
-def twitter_bytesio_to_listdict(bytes_to_read: io.BytesIO) -> list[dict[Any, Any]]:
+def bytesio_to_listdict(bytes_to_read: io.BytesIO) -> list[dict[Any, Any]]:
     """
     Converts a io.BytesIO buffer containing a twitter.js file, to a list of dicts
 
@@ -201,7 +201,7 @@ def twitter_bytesio_to_listdict(bytes_to_read: io.BytesIO) -> list[dict[Any, Any
         return out
 
 
-def twitter_interests_to_list(interest_list: list[dict[Any, Any]]) -> list[str]:
+def interests_to_list(interest_list: list[dict[Any, Any]]) -> list[str]:
     """
     This function extracts twitter interests from a list[dict]
     This list[dict] should be obtained from personalization.js

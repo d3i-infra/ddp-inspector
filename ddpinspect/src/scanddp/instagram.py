@@ -89,7 +89,7 @@ class ValidateInstagramInput:
         return self.status_message.get(self.status_code, {}).get("description", "Not defined")
 
 
-def validate_instagram_zip(instagram_zip: Path) -> ValidateInstagramInput:
+def validate_zip(zfile: Path) -> ValidateInstagramInput:
     """
     Validates the input of an instagram zipfile
 
@@ -107,7 +107,7 @@ def validate_instagram_zip(instagram_zip: Path) -> ValidateInstagramInput:
 
     paths = []
     try:
-        with zipfile.ZipFile(instagram_zip, "r") as zf:
+        with zipfile.ZipFile(zfile, "r") as zf:
             for f in zf.namelist():
                 p = Path(f)
                 if p.suffix in (".html", ".json"):
@@ -135,7 +135,7 @@ def validate_instagram_zip(instagram_zip: Path) -> ValidateInstagramInput:
     return validate
 
 
-def instagram_bytesio_to_dict(bytes_to_read: io.BytesIO) -> dict[Any, Any]:
+def bytesio_to_dict(bytes_to_read: io.BytesIO) -> dict[Any, Any]:
     """
     Converts a io.BytesIO buffer containing an instagram json file to a dict
     """
@@ -153,7 +153,7 @@ def instagram_bytesio_to_dict(bytes_to_read: io.BytesIO) -> dict[Any, Any]:
         return out
 
 
-def instagram_interests_to_list(dict_with_interests: dict[Any, Any]) -> list[str]:
+def interests_to_list(dict_with_interests: dict[Any, Any]) -> list[str]:
     """
     This function extracts instagram interests from a dict
     This dict should be obtained from ads_interests.json
@@ -186,7 +186,7 @@ def instagram_interests_to_list(dict_with_interests: dict[Any, Any]) -> list[str
         return out
 
 
-def instagram_your_topics_to_list(dict_with_topics: dict[Any, Any]) -> list[str]:
+def your_topics_to_list(dict_with_topics: dict[Any, Any]) -> list[str]:
     """
     This function extracts instagram your_topics from a dict
     This dict should be obtained from your_topics.json
