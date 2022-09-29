@@ -450,17 +450,22 @@ from ddpinspect import unzipddp
 import pandas as pd
 
 my_zip = "./example_ddps/youtube/takeout-20220921T133717Z-001.zip"
-my_bytes = unzipddp.extract_file_from_zip(my_zip, "subscriptions.csv")
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "Liked videos.csv")
+out =  []
 with io.TextIOWrapper(my_bytes, encoding="utf8") as b:
     reader = csv.DictReader(b)
     for row in reader:
-        print(row['Channel Title'])
+        out.append(row)
+
+out[10]
+
 
 
 
 ###################################################
 
 from ddpinspect import unzipddp
+from ddpinspect import scanfiles
 
 import logging 
 import json 
@@ -471,8 +476,7 @@ my_zip = "./example_ddps/youtube/takeout-20220921T133717Z-001.zip"
 my_bytes = unzipddp.extract_file_from_zip(my_zip, "watch-history.json")
 with my_bytes as b:
     out = json.load(b)
-    
-len(out)
 
-###################################################
+pd.DataFrame([scanfiles.dict_denester(d) for d in out])
+
 

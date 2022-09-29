@@ -3,6 +3,8 @@ Contains functions to deal with zipfiles
 """
 
 from pathlib import Path
+from typing import Any
+import json
 import zipfile
 import time
 import os
@@ -80,3 +82,32 @@ def extract_file_from_zip(zfile: str, file_to_extract: str) -> io.BytesIO:
 
     finally:
         return file_to_extract_bytes
+
+
+def read_json_from_bytes(json_bytes: io.BytesIO) -> dict[Any, Any] | list[Any]:
+    """
+    Reads json from file if succesful it returns the result from json.load()
+    """
+    out: dict[Any, Any] | list[Any] = {}
+
+    b = json_bytes.read()
+
+    try:
+        stream = io.TextIOWrapper(io.BytesIO(b), encoding="utf8")
+        out = json.load(stream)
+        logger.debug("succesfully converted json bytes with encoding utf8")
+
+    except json.JSONDecodeError:
+        logger.debug("Trying utf-8-sig encoding")
+        try:
+            stream = io.TextIOWrapper(io.BytesIO(b), encoding="utf-8-sig")
+            out = json.load(stream)
+            logger.debug("succesfully opened json bytes with encoding utf-8-sig")
+        except Exception as e:
+            logger.error("%s, could not convert json bytes", e)
+
+    except Exception as e:
+        logger.error("%s, could not convert json bytes", e)
+
+    finally:
+        return out

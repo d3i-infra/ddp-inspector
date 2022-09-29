@@ -4,7 +4,9 @@ Tests test the functionality of the instagram module
 
 import pytest
 from pathlib import Path
+
 from ddpinspect import instagram
+from ddpinspect import unzipddp
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
 
@@ -30,8 +32,8 @@ def test_instagram_function(fun_to_test: str, file: str, result: list) -> None:
     """
 
     f_to_check = DATA_DIR / file
-    with open(f_to_check, "rb") as f:
-        to_check_dict = instagram.bytesio_to_dict(f)
+    with open(f_to_check, "rb") as b:
+        to_check_dict = unzipddp.read_json_from_bytes(b)
 
     assert (
         len(to_check_dict) != 0

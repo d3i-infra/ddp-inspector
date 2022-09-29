@@ -4,7 +4,7 @@ This module contains functions to scan the files contained inside a DDP
 
 from pathlib import Path
 from pathlib import PurePath
-from typing import Any, Union
+from typing import Any
 from datetime import datetime
 from dataclasses import dataclass, asdict
 import logging
@@ -58,12 +58,12 @@ def path_exists(p: Path) -> None:
     raise FileNotFoundError(f"Path: {p} does not exists")
 
 
-def read_json_from_file(path_to_json: Path) -> Union[dict[Any, Any], list[Any]]:
+def read_json_from_file(path_to_json: Path) -> dict[Any, Any] | list[Any]:
     """
     Reads json from file if succesful it returns the result from json.load()
     """
     path_to_json = Path(path_to_json)
-    out: Union[dict[Any, Any], list[Any]]
+    out: dict[Any, Any] | list[Any]
 
     try:
         with open(path_to_json, encoding="utf8") as f:
@@ -243,3 +243,34 @@ def scan_files_all(foldername: Path) -> pd.DataFrame:
 
     df = pd.DataFrame([asdict(fd) for fd in file_descriptions])
     return df
+
+
+def dict_denester(
+    inp: dict[Any, Any] | list[Any],
+    new: dict[Any, Any] | None = None,
+    name: str = "",
+    run_first: bool = True,
+) -> dict[Any, Any]:
+    """
+    Denest a dict or list, returns a new denested dict
+    """
+
+    if run_first:
+        new = {}
+
+    if isinstance(inp, dict):
+        for k, v in inp.items():
+            if isinstance(v, (dict, list)):
+                dict_denester(v, new, f"{name}_{str(k)}", run_first=False)
+            else:
+                newname = f"{name}_{k}"
+                new.update({newname[1:]: v})  # type: ignore
+
+    elif isinstance(inp, list):
+        for i, item in enumerate(inp):
+            dict_denester(item, new, f"{name}_{i}", run_first=False)
+
+    else:
+        new.update({name[1:]: inp})  # type: ignore
+
+    return new  # type: ignore

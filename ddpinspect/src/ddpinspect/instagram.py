@@ -7,8 +7,6 @@ This module contains functions to handle *.jons files contained within an instag
 from typing import Any
 from pathlib import Path
 from dataclasses import dataclass, field
-import json
-import io
 import logging
 import zipfile
 
@@ -133,24 +131,6 @@ def validate_zip(zfile: Path) -> ValidateInstagramInput:
         return validate
 
     return validate
-
-
-def bytesio_to_dict(bytes_to_read: io.BytesIO) -> dict[Any, Any]:
-    """
-    Converts a io.BytesIO buffer containing an instagram json file to a dict
-    """
-
-    out = {}
-    try:
-        out = json.load(bytes_to_read)
-
-    except json.decoder.JSONDecodeError as e:
-        logger.error("The input buffer did not contain a valid JSON: %s", e)
-    except Exception as e:
-        logger.error("Exception was caught: %s", e)
-
-    finally:
-        return out
 
 
 def interests_to_list(dict_with_interests: dict[Any, Any]) -> list[str]:
