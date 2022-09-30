@@ -1,7 +1,7 @@
 ######################################################################################################
 # My own testing grounds
 # pieces of code that I run to test stuff
-
+ import     
 import logging
 logging.basicConfig(level=logging.INFO)
 
@@ -466,17 +466,315 @@ out[10]
 
 from ddpinspect import unzipddp
 from ddpinspect import scanfiles
-
+import pandas as pd
 import logging 
 import json 
+import io 
 logging.basicConfig(level=logging.DEBUG)
 
+
 my_zip = "./example_ddps/youtube/takeout-20220921T133717Z-001.zip"
-
 my_bytes = unzipddp.extract_file_from_zip(my_zip, "watch-history.json")
-with my_bytes as b:
-    out = json.load(b)
+my_d = unzipddp.read_json_from_bytes(my_bytes)
 
-pd.DataFrame([scanfiles.dict_denester(d) for d in out])
+df = pd.DataFrame([scanfiles.dict_denester(d) for d in my_d])
+
+pd.to_datetime(df['time']).isoformat() > (datetime.now() - timedelta(days=360)).isoformat()
+
+
+from datetime import datetime, timedelta
+
+
+
+def watch_history_to_df(history: dict[Any, Any]) -> pd.DataFrame:
+    df = pd.DataFrame([scanfiles.dict_denester(d) for d in out])
+
+
+
+json.load(my_bytes)
+
+time = [
+    "2022-01-02",
+    "2022-02-01",
+    "2022-02-28"
+]
+
+pd.to_datetime(time, infer_datetime_format=True)
+
+time = [
+    "2022-13-02",
+    "2022-02-01",
+    "2022-02-28"
+]
+
+pd.to_datetime(time, infer_datetime_format=True)
+
+time = [
+    "20-02-2022",
+    "13-02-2022",
+    "02-13-2022",
+    "01-02-2022",
+    "01-02-2022",
+    "01-02-2022",
+    "01-02-2022",
+    "20-02-2022",
+    "20-02-2022",
+    "20-02-2022",
+]
+
+pd.to_datetime(time, infer_datetime_format=True)
+
+
+from dateutil.parser import parse, ParserError, isoparse
+
+
+
+
+# to_datetime is by far the fastest option
+# infer_datetime_format
+
+# Not ISO TIME can be understood by to_datetime
+# This case it infers the MMDDYYYY and applies it to the df
+time = [
+    "11-30-2022",
+    "01-13-2022",
+    "01-02-2022",
+]
+
+# Not ISO TIME can be understood by to_datetime
+# This case it infers the DDMMYYYY and applies it to the df
+# Warns for 11-30-2022
+time = [
+    "01-02-2022",
+    "11-30-2022",
+    "30-11-2022",
+]
+
+# Not ISO TIME can be understood by to_datetime
+# This case it infers the DDMMYYYY and applies it to the df
+# Warns for the rest
+time = [
+    "01-02-2022",
+    "01-13-2022",
+    "01-14-2022",
+    "01-15-2022",
+]
+
+# infers month first
+time = [
+    "01-13-2022",
+    "01-14-2022",
+    "01-15-2022",
+]
+
+time = [
+    "2020-03-02T14:28:23.382748",
+    "2020-03-01T14:28:23.382748",
+    "2020-02-01T14:28:23.382748"
+]
+
+series
+series = time
+try:
+    check = pd.to_datetime(series, dayfirst=True)
+    #check = pd.to_datetime(series, infer_datetime_format=True)
+except ParserError as e:
+    print(e)
+
+check
+
+
+
+import dateutil.parser as parser
+import re 
+
+regex = r'^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\.[0-9]+)?(Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?$'
+match_iso8601 = re.compile(regex).match
+
+
+def is_isoformat(datetime_str, check_minimum: int) -> bool:
+    """
+    Check if list-like object has ISO 8601 date strings
+    """
+    try:
+        for i in range(min(len(datetime_str), check_minimum)):
+            if match_iso8601(datetime_str[i]) is None:
+                logging.info("Could not detect ISO 8601 timestamp: %s", datetime_str[i])
+                return False
+
+    except Exception as e:
+        logging.info("Could not detect ISO 8601 timestamp: %s", datetime_str[i])
+        return False
+
+    logging.info("ISO 8601 timestamp detected")
+    return True
+    
+
+from datetime import datetime
+
+
+946684800 # 2000
+2208988800 # 2040
+
+def is_epoch(datetime_int, check_minimum: int) -> bool:
+    """
+    Check if list-like object has ISO 8601 date strings
+    """
+
+    year2020 = 946684800
+    year2040 = 2208988800
+
+    try:
+        for i in range(min(len(datetime_int), check_minimum)):
+            check_time = datetime_int[i]
+            if not isinstance(check_time, int) or check_time < year2020 or check_time > year2040:
+                logging.info("Could not detect epoch time timestamp: %s", check_time)
+                return False
+
+    except Exception as e:
+        logging.info("Could not detect epoch time timestamp, %s", e)
+        return False
+
+    logging.info("Epoch timestamp detected")
+    return True
+
+
+
+datetime.fromtimestamp(2101988800)
+
+def convert_timestamp(datetime_str):
+    """
+    If timestamps are ISO 8601 return those
+    If timestamps are ints (epochtime) return those
+
+    If first ambigous non NaN timestamps is encoutered 
+    (and can be detected with infer_datetime_format=True and dayfirst-True) 
+    every timestamp is interpreted as DD/MM/YYYY if possible, 
+    if resulting in incorrect timestamp, then MM/DD/YYYY is used, 
+    converting format is silently switched
+    
+    If first non-ambigous non NaN timestamps is encoutered 
+    (and can be detected with infer_datetime_format=True and dayfirst-True) 
+    every timestamp is interpreted as either DD/MM/YYYY or MM/DD/YYYY depending on the first timestamp
+    If the other format is encountered, that would result in an error, format is silently switched
+
+    If timestamp format cannot be detected with infer_datetime_format
+    dateutils.parser.parse() is used with dayfirst is true setting
+    Interpretering everything as DD/MM/YYYY except if that results in incorrect interpretation,
+    then MM/DD/YYYY is used
+
+    YYYY/MM/DD formats not ISO 8601 will be interpreted incorrectly, as YYYY/DD/MM if possible
+
+    Note 1: to_datetime will be rewritten in a future pandas release
+    Also to_datetime, guess_datetime_format will be made available in pandas.tools
+    The silent format changes will be changed. 
+
+    Note 2: This is a very complicated problem to solve, solving this problem myself is too difficult
+    for what I might expect to gain in accuracy
+
+    Concluding: Although a lot can go wrong, I expect the impact will be minor, 
+    When american formats are encourted regularly things will go wrong most often
+    """
+    try:
+        if is_isoformat(datetime_str, 100):
+            return pd.to_datetime(datetime_str)
+
+        if is_epoch(datetime_str, 100):
+            return pd.to_datetime(datetime_str, unit="s")
+
+        return pd.to_datetime(datetime_str, infer_datetime_format=True, dayfirst=True)
+        
+    except (ValueError, TypeError) as e:
+        logging.error("Could not convert timestamps: %s", e)
+
+
+
+x = convert_timestamp([1,2,3,4,"123"])
+
+x = convert_timestamp([
+    166344030,
+    1664572654,
+    1664572654,
+    1664572654,
+    1664572654,
+    1664572654])
+
+time = [
+    "01-02-2022",
+    "01-13-2022",
+    "01-14-2022",
+    "01-15-2022",
+]
+
+
+time = [
+    "2020-14-02T14:28:23.382748",
+    "2020-01-18T14:28:23.382748",
+    "2020-30-01T14:28:23.382748"
+]
+
+time = [
+    "2020-01-02T14:28:23.382748",
+    "2020-01-18T14:28:23.382748",
+    "2020-01-01T14:28:23.382748",
+]
+
+convert_timestamp(time) 
+
+# IDEA check for ISO, check for epoch
+# Then let to_datetime do its thing
+
+
+l = dfi[0:100]
+[l[i] >= l[i+1] for i in range(len(l) - 1)]
+l = dft[0:100]
+[l[i] >= l[i+1] for i in range(len(l) - 1)]
+l = dff[0:100]
+[l[i] >= l[i+1] for i in range(len(l) - 1)]
+
+
+pd.to_datetime(df['time'], infer_datetime_format=True)
+
+time = [
+    "20/02/2022",
+    "02/20/2022",
+    "02/20/2022",
+]
+
+pd.to_datetime(range(0,1000))
+
+
+pd.to_datetime(time, infer_datetime_format=True, errors='raise')
+
+pd.to_datetime(time, errors='raise')
+pd.to_datetime(time)
+
+isoparse(df['time'][0])
+
+
+import timeit
+timeit.timeit(
+"""
+import pandas as pd
+s = pd.Series(['3/11/2000', '3/12/2000', '3/13/2000'] * 1000)
+pd.to_datetime(s, infer_datetime_format=True)
+"""
+)
+
+
+timeit.timeit(
+"""
+import pandas as pd
+s = pd.Series(['3/11/2000', '3/12/2000', '3/13/2000'] * 1000)
+pd.to_datetime(s, infer_datetime_format=True)
+"""
+)
+
+
+# approach for timestamps
+# 1. try strptime
+# 2. pandas.to_datetime
+# 3. Then
+
 
 
