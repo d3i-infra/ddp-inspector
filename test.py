@@ -525,7 +525,6 @@ time = [
 pd.to_datetime(time, infer_datetime_format=True)
 
 
-from dateutil.parser import parse, ParserError, isoparse
 
 
 
@@ -573,61 +572,61 @@ time = [
     "2020-02-01T14:28:23.382748"
 ]
 
-series
-series = time
-try:
-    check = pd.to_datetime(series, dayfirst=True)
-    #check = pd.to_datetime(series, infer_datetime_format=True)
-except ParserError as e:
-    print(e)
+########################################################################
 
-check
-
-
-
-import dateutil.parser as parser
+import pandas as pd
+import logging 
 import re 
 
-regex = r'^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\.[0-9]+)?(Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?$'
-match_iso8601 = re.compile(regex).match
+
+logging.basicConfig(level=logging.DEBUG)
+
+regex_iso8601_full = r'^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\.[0-9]+)?(Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?$'
+
+regex_iso8601_date = r'^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])$'
+
+match_iso8601_full = re.compile(regex_iso8601_full).match
+match_iso8601_date = re.compile(regex_iso8601_date).match
 
 
-def is_isoformat(datetime_str, check_minimum: int) -> bool:
+def is_isoformat(datetime_str, check_minimum: int, date_only: bool = False) -> bool:
     """
     Check if list-like object has ISO 8601 date strings
     """
+
+    regex_iso8601_full = r'^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\.[0-9]+)?(Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?$'
+    regex_iso8601_date = r'^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])$'
+
+    regex = regex_iso8601_full if date_only is False else regex_iso8601_date 
+
     try:
         for i in range(min(len(datetime_str), check_minimum)):
-            if match_iso8601(datetime_str[i]) is None:
-                logging.info("Could not detect ISO 8601 timestamp: %s", datetime_str[i])
+            if re.fullmatch(regex, datetime_str[i]) is None:
+                logging.info("Could not detect ISO 8601 timestamp (date_only=%s): %s", date_only, datetime_str[i])
                 return False
 
     except Exception as e:
-        logging.info("Could not detect ISO 8601 timestamp: %s", datetime_str[i])
+        logging.info("Could not detect ISO 8601 timestamp (date_only=%s): %s", date_only, datetime_str[i])
         return False
 
-    logging.info("ISO 8601 timestamp detected")
+    logging.info("ISO 8601 timestamp detected (date_only=%s)", date_only)
     return True
     
 
-from datetime import datetime
-
-
-946684800 # 2000
-2208988800 # 2040
 
 def is_epoch(datetime_int, check_minimum: int) -> bool:
     """
-    Check if list-like object has ISO 8601 date strings
+    Check if list-like object with ints or str that can be interpreted as ints
+    epoch time (unit seconds) fall between the start of year 2000 and the year 2040
     """
 
-    year2020 = 946684800
+    year2000 = 946684800
     year2040 = 2208988800
 
     try:
         for i in range(min(len(datetime_int), check_minimum)):
-            check_time = datetime_int[i]
-            if not isinstance(check_time, int) or check_time < year2020 or check_time > year2040:
+            check_time = int(datetime_int[i])
+            if not (year2000 <= check_time <= year2040):
                 logging.info("Could not detect epoch time timestamp: %s", check_time)
                 return False
 
@@ -640,7 +639,6 @@ def is_epoch(datetime_int, check_minimum: int) -> bool:
 
 
 
-datetime.fromtimestamp(2101988800)
 
 def convert_timestamp(datetime_str):
     """
@@ -675,106 +673,50 @@ def convert_timestamp(datetime_str):
     Concluding: Although a lot can go wrong, I expect the impact will be minor, 
     When american formats are encourted regularly things will go wrong most often
     """
+    out = None
     try:
-        if is_isoformat(datetime_str, 100):
-            return pd.to_datetime(datetime_str)
 
-        if is_epoch(datetime_str, 100):
-            return pd.to_datetime(datetime_str, unit="s")
+        if is_isoformat(datetime_str, 10):
+            out = pd.to_datetime(datetime_str)
 
-        return pd.to_datetime(datetime_str, infer_datetime_format=True, dayfirst=True)
+        elif is_isoformat(datetime_str, 10, date_only=True):
+            out = pd.to_datetime(datetime_str)
+
+        elif is_epoch(datetime_str, 10):
+            out =  pd.to_datetime(datetime_str, unit="s")
+
+        else:
+            out = pd.to_datetime(datetime_str, infer_datetime_format=True, dayfirst=True)
         
     except (ValueError, TypeError) as e:
         logging.error("Could not convert timestamps: %s", e)
+        raise e
+
+    return out
 
 
 
-x = convert_timestamp([1,2,3,4,"123"])
+is_isoformat(["2020-12-02T14:28:23.382748", "2020-12-01T14:28:23.382748"])
+["1662630968", "2000000968"]
+[pd.Timestamp("2022-09-08 09:56:08"), pd.Timestamp("2033-05-18 03:49:28")]
+[1662630968, 2000000968]
+[pd.Timestamp("2022-09-08 09:56:08"), pd.Timestamp("2033-05-18 03:49:28")]
+["01/01/2022, 15:10:17", "02/01/2022, 15:20:25"]
+["01-02-2022", "01-10-2022"]
+["12-31-2022", "02-01-2022"]
 
-x = convert_timestamp([
-    166344030,
-    1664572654,
-    1664572654,
-    1664572654,
-    1664572654,
-    1664572654])
-
-time = [
-    "01-02-2022",
-    "01-13-2022",
-    "01-14-2022",
-    "01-15-2022",
-]
+["02-01-2022", "12-31-2022"]
+["2022/02/01", "2022/01/02"]
+["2022/01/02", "2022/02/01"]
 
 
-time = [
-    "2020-14-02T14:28:23.382748",
-    "2020-01-18T14:28:23.382748",
-    "2020-30-01T14:28:23.382748"
-]
-
-time = [
-    "2020-01-02T14:28:23.382748",
-    "2020-01-18T14:28:23.382748",
-    "2020-01-01T14:28:23.382748",
-]
-
-convert_timestamp(time) 
-
-# IDEA check for ISO, check for epoch
-# Then let to_datetime do its thing
+convert_timestamp(["20200208"])
+convert_timestamp(["20200102", "20200201"])
+convert_timestamp(["2020-01-02", "2020-02-01"])
 
 
-l = dfi[0:100]
-[l[i] >= l[i+1] for i in range(len(l) - 1)]
-l = dft[0:100]
-[l[i] >= l[i+1] for i in range(len(l) - 1)]
-l = dff[0:100]
-[l[i] >= l[i+1] for i in range(len(l) - 1)]
-
-
-pd.to_datetime(df['time'], infer_datetime_format=True)
-
-time = [
-    "20/02/2022",
-    "02/20/2022",
-    "02/20/2022",
-]
-
-pd.to_datetime(range(0,1000))
-
-
-pd.to_datetime(time, infer_datetime_format=True, errors='raise')
-
-pd.to_datetime(time, errors='raise')
-pd.to_datetime(time)
-
-isoparse(df['time'][0])
-
-
-import timeit
-timeit.timeit(
-"""
-import pandas as pd
-s = pd.Series(['3/11/2000', '3/12/2000', '3/13/2000'] * 1000)
-pd.to_datetime(s, infer_datetime_format=True)
-"""
-)
-
-
-timeit.timeit(
-"""
-import pandas as pd
-s = pd.Series(['3/11/2000', '3/12/2000', '3/13/2000'] * 1000)
-pd.to_datetime(s, infer_datetime_format=True)
-"""
-)
-
-
-# approach for timestamps
-# 1. try strptime
-# 2. pandas.to_datetime
-# 3. Then
-
+is_isoformat(["20200208"],10, date_only = True)
+is_isoformat(["20200102", "20200201"], 10)
+is_isoformat(["2020-12-02", "2020-01-01"], 10, date_only = True)
 
 
