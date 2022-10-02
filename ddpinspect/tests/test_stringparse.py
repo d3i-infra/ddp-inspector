@@ -5,6 +5,9 @@ Tests can be added and changed when needed
 """
 
 import pytest
+import warnings
+import pandas as pd
+
 from parserlib import stringparse
 
 
@@ -126,3 +129,67 @@ def test_is_ipaddress(test_ip: str, expected: bool) -> None:
     assert (
         stringparse.is_ipaddress(test_ip) is expected
     ), f"ip: {test_ip}, it should be bool: {expected}"
+
+
+@pytest.mark.parametrize(
+    "datetime_str, expected",
+    [
+        # Timestamps that will converted as expected
+        (
+            ["2020-12-02T14:28:23.382748", "2020-12-01T14:28:23.382748"],
+            [
+                pd.Timestamp("2020-12-02 14:28:23.382748"),
+                pd.Timestamp("2020-12-01 14:28:23.382748"),
+            ],
+        ),
+        (
+            ["1662630968", "2000000968"],
+            [pd.Timestamp("2022-09-08 09:56:08"), pd.Timestamp("2033-05-18 03:49:28")],
+        ),
+        (
+            [1662630968, 2000000968],
+            [pd.Timestamp("2022-09-08 09:56:08"), pd.Timestamp("2033-05-18 03:49:28")],
+        ),
+        (
+            ["02/01/2022, 15:10:17", "02/01/2022, 15:20:25"],
+            [pd.Timestamp("2022-01-02 15:10:17"), pd.Timestamp("2022-01-02 15:20:25")],
+        ),
+        (
+            ["01-02-2022", "01-10-2022"],
+            [pd.Timestamp("2022-02-01 00:00:00"), pd.Timestamp("2022-10-01 00:00:00")],
+        ),
+        (
+            ["12-31-2022", "02-01-2022"],
+            [pd.Timestamp("2022-12-31 00:00:00"), pd.Timestamp("2022-02-01 00:00:00")],
+        ),
+        (
+            ["20220102", "20220201"],
+            [pd.Timestamp("2022-01-02 00:00:00"), pd.Timestamp("2022-02-01 00:00:00")],
+        ),
+        (
+            ["2022-01-02", "2022-02-01"],
+            [pd.Timestamp("2022-01-02 00:00:00"), pd.Timestamp("2022-02-01 00:00:00")],
+        ),
+        # Timestamps that will not be converted as expected
+        (
+            ["02-01-2022", "12-31-2022"],
+            [pd.Timestamp("2022-01-02 00:00:00"), pd.Timestamp("2022-12-31 00:00:00")],
+        ),
+        (
+            ["2022/02/01", "2022/01/02"],
+            [pd.Timestamp("2022-01-02 00:00:00"), pd.Timestamp("2022-02-01 00:00:00")],
+        ),
+    ],
+)
+def test_convert_datetime_str(datetime_str: list, expected: list) -> None:
+    """
+    test stringparse.has_ip
+    """
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+
+        timestamps = stringparse.convert_datetime_str(datetime_str)
+        for timestamp_found, timestamp_expected in zip(timestamps, expected):
+            assert (
+                timestamp_found == timestamp_expected
+            ), f"timestamp_found: {timestamp_found}, timestamp_expected {timestamp_expected}"

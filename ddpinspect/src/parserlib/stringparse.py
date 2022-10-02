@@ -123,6 +123,126 @@ def is_ipaddress(input_string: str) -> bool:
         return False
 
 
-# geolocatie
-# telnummer
-# is path vs has path
+def is_isoformat(
+    datetime_str: list[str] | list[int], check_minimum: int, date_only: bool = False
+) -> bool:
+    """
+    Check if list like object containing datetime stamps are ISO 8601 strings
+    date_only = True, checks if only the date part is ISO 8601
+    """
+
+    regex = (
+        urldetectionregex.REGEX_ISO8601_FULL
+        if date_only is False
+        else urldetectionregex.REGEX_ISO8601_DATE
+    )
+
+    try:
+        for i in range(min(len(datetime_str), check_minimum)):
+            if isinstance(datetime_str[i], int):
+                logger.debug(
+                    "Could not detect ISO 8601 timestamp (date_only=%s): %s",
+                    date_only,
+                    datetime_str[i],
+                )
+                return False
+
+            if re.fullmatch(regex, datetime_str[i]) is None:  # type: ignore
+                logger.debug(
+                    "Could not detect ISO 8601 timestamp (date_only=%s): %s",
+                    date_only,
+                    datetime_str[i],
+                )
+                return False
+
+    except Exception as e:
+        logger.debug(
+            "Could not detect ISO 8601 timestamp (date_only=%s): %s, error: %s",
+            date_only,
+            datetime_str[i],
+            e
+        )
+        return False
+
+    logger.debug("ISO 8601 timestamp detected (date_only=%s)", date_only)
+    return True
+
+
+def is_epoch(datetime_int: list[int] | list[str], check_minimum: int) -> bool:
+    """
+    Check if list-like object with ints or str that can be interpreted as ints
+    epoch time (unit seconds) fall between the start of year 2000 and the year 2040
+    """
+
+    year2000 = 946684800
+    year2040 = 2208988800
+
+    try:
+        for i in range(min(len(datetime_int), check_minimum)):
+            check_time = int(datetime_int[i])
+            if not year2000 <= check_time <= year2040:
+                logging.debug("Could not detect epoch time timestamp: %s", check_time)
+                return False
+
+    except Exception as e:
+        logger.debug("Could not detect epoch time timestamp, %s", e)
+        return False
+
+    logger.debug("Epoch timestamp detected")
+    return True
+
+
+def convert_datetime_str(datetime_str: list[str] | list[int]) -> pd.DatetimeIndex | None:
+    """
+    If timestamps are ISO 8601 return those
+    If timestamps are ints (epochtime) return those
+
+    If first ambigous non NaN timestamps is encoutered
+    (and can be detected with infer_datetime_format=True and dayfirst-True)
+    every timestamp is interpreted as DD/MM/YYYY if possible,
+    if resulting in incorrect timestamp, then MM/DD/YYYY is used,
+    converting format is silently switched
+
+    If first non-ambigous non NaN timestamps is encoutered
+    (and can be detected with infer_datetime_format=True and dayfirst-True)
+    every timestamp is interpreted as either DD/MM/YYYY or MM/DD/YYYY depending on the first timestamp
+    If the other format is encountered, that would result in an error, format is silently switched
+
+    If timestamp format cannot be detected with infer_datetime_format
+    dateutils.parser.parse() is used with dayfirst is true setting
+    Interpretering everything as DD/MM/YYYY except if that results in incorrect interpretation,
+    then MM/DD/YYYY is used
+
+    YYYY/MM/DD formats not ISO 8601 will be interpreted incorrectly, as YYYY/DD/MM if possible
+
+    Note 1: to_datetime will be rewritten in a future pandas release
+    Also to_datetime, guess_datetime_format will be made available in pandas.tools
+    The silent format changes will be changed.
+
+    Note 2: This is a very complicated problem to solve, solving this problem myself is too difficult
+    for what I might expect to gain in accuracy
+
+    Concluding: Although a lot can go wrong, I expect the impact will be minor,
+    When american formats are encourted regularly things will go wrong most often
+    """
+    out = None
+    try:
+
+        if is_isoformat(datetime_str, 10):
+            out = pd.to_datetime(datetime_str)
+
+        elif is_isoformat(datetime_str, 10, date_only=True):
+            out = pd.to_datetime(datetime_str)
+
+        elif is_epoch(datetime_str, 10):
+            out = pd.to_datetime(datetime_str, unit="s")
+
+        else:
+            out = pd.to_datetime(
+                datetime_str, infer_datetime_format=True, dayfirst=True
+            )
+
+    except (ValueError, TypeError, OverflowError) as e:
+        logging.error("Could not convert timestamps: %s", e)
+
+    return out
