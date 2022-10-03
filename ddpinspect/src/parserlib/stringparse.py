@@ -181,7 +181,7 @@ def is_epoch(datetime_int: list[int] | list[str], check_minimum: int) -> bool:
         for i in range(min(len(datetime_int), check_minimum)):
             check_time = int(datetime_int[i])
             if not year2000 <= check_time <= year2040:
-                logging.debug("Could not detect epoch time timestamp: %s", check_time)
+                logger.debug("Could not detect epoch time timestamp: %s", check_time)
                 return False
 
     except Exception as e:
@@ -243,6 +243,6 @@ def convert_datetime_str(datetime_str: list[str] | list[int]) -> pd.DatetimeInde
             )
 
     except (ValueError, TypeError, OverflowError) as e:
-        logging.error("Could not convert timestamps: %s", e)
+        logger.error("Could not convert timestamps: %s", e)
 
     return out

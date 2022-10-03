@@ -10,7 +10,6 @@ from dataclasses import dataclass, field
 import logging
 import zipfile
 
-from ddpinspect.my_exceptions import ObjectIsNotADict
 
 logger = logging.getLogger(__name__)
 
@@ -144,7 +143,7 @@ def interests_to_list(dict_with_interests: dict[Any, Any]) -> list[str]:
 
     try:
         if not isinstance(dict_with_interests, dict):
-            raise ObjectIsNotADict("The input to this function was not dict")
+            raise TypeError("The input to this function was not dict")
 
         # The compleet lookup is:
         # "inferred_data_ig_interest" -> "string_map_data" -> "Interesse"
@@ -155,7 +154,7 @@ def interests_to_list(dict_with_interests: dict[Any, Any]) -> list[str]:
             res = item["string_map_data"].popitem()
             out.append(res[1]["value"])
 
-    except ObjectIsNotADict as e:
+    except TypeError as e:
         logger.error("The input list did not contain a dict: %s", e)
     except KeyError as e:
         logger.error("The a dict did not contain key: %s", e)
@@ -177,7 +176,7 @@ def your_topics_to_list(dict_with_topics: dict[Any, Any]) -> list[str]:
 
     try:
         if not isinstance(dict_with_topics, dict):
-            raise ObjectIsNotADict("The input to this function was not dict")
+            raise TypeError("The input to this function was not dict")
 
         # The compleet lookup is:
         # "topics_your_topics" -> "string_map_data" -> "Name" -> "value"
@@ -185,7 +184,7 @@ def your_topics_to_list(dict_with_topics: dict[Any, Any]) -> list[str]:
             res = item["string_map_data"].popitem()
             out.append(res[1]["value"])
 
-    except ObjectIsNotADict as e:
+    except TypeError as e:
         logger.error("The input list did not contain a dict: %s", e)
     except KeyError as e:
         logger.error("The a dict did not contain the key: %s", e)

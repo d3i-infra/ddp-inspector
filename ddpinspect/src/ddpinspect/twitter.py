@@ -13,7 +13,6 @@ import re
 import logging
 import zipfile
 
-from ddpinspect.my_exceptions import ObjectIsNotADict
 
 logger = logging.getLogger(__name__)
 
@@ -214,7 +213,7 @@ def interests_to_list(interest_list: list[dict[Any, Any]]) -> list[str]:
         dict_with_interests = interest_list[0]
 
         if not isinstance(dict_with_interests, dict):
-            raise ObjectIsNotADict("The first item in interest_list is not a dict")
+            raise TypeError("The first item in interest_list is not a dict")
 
         # traverse into the nested dict
         for key in ["p13nData", "interests", "interests"]:
@@ -224,7 +223,7 @@ def interests_to_list(interest_list: list[dict[Any, Any]]) -> list[str]:
 
     except IndexError as e:
         logger.error("The input object is an empty list: %s", e)
-    except ObjectIsNotADict as e:
+    except TypeError as e:
         logger.error("The input list did not contain a dict: %s", e)
     except KeyError as e:
         logger.error("The a dict did not contain the interests: %s", e)
