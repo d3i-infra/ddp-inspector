@@ -450,18 +450,16 @@ from ddpinspect import unzipddp
 import pandas as pd
 
 my_zip = "./example_ddps/youtube/takeout-20220921T133717Z-001.zip"
-my_bytes = unzipddp.extract_file_from_zip(my_zip, "Liked videos.csv")
-out =  []
-with io.TextIOWrapper(my_bytes, encoding="utf8") as b:
-    reader = csv.DictReader(b)
-    for row in reader:
-        out.append(row)
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "subscriptions.csv")
+data = unzipddp.read_csv_from_bytes(my_bytes)
 
-out[10]
+df = pd.DataFrame(data)
+df.to_excel("subscriptions.xlsx")
 
 
 
 ########################################################################
+
 
 import logging 
 
@@ -476,9 +474,15 @@ my_zip = "./example_ddps/youtube/takeout-20220921T133717Z-001.zip"
 
 my_bytes = unzipddp.extract_file_from_zip(my_zip, "watch-history.json")
 watch_history = unzipddp.read_json_from_bytes(my_bytes)
-youtube.watch_history_to_df(watch_history)
+df = youtube.watch_history_to_df(watch_history)
+
+df.to_excel("watch_history.xlsx")
 
 
 scanfiles.dict_denester(watch_history)
 dir(unzipddp)
+
+
+
+
 

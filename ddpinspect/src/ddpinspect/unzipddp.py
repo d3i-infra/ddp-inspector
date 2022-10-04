@@ -5,6 +5,7 @@ Contains functions to deal with zipfiles
 from pathlib import Path
 from typing import Any
 import json
+import csv
 import zipfile
 import time
 import os
@@ -90,6 +91,7 @@ def read_json_from_bytes(json_bytes: io.BytesIO) -> dict[Any, Any] | list[Any]:
     """
     out: dict[Any, Any] | list[Any] = {}
 
+    # Stream might need to be reopened again after a failed read
     b = json_bytes.read()
 
     try:
@@ -108,6 +110,28 @@ def read_json_from_bytes(json_bytes: io.BytesIO) -> dict[Any, Any] | list[Any]:
 
     except Exception as e:
         logger.error("%s, could not convert json bytes", e)
+
+    finally:
+        return out
+
+
+def read_csv_from_bytes(json_bytes: io.BytesIO) -> list[dict[Any, Any]]:
+    """
+    Reads json from file if succesful it returns the result from json.load()
+    """
+    out: list[dict[Any, Any]] = []
+
+    b = json_bytes.read()
+
+    try:
+        stream = io.TextIOWrapper(io.BytesIO(b), encoding="utf8")
+        reader = csv.DictReader(stream)
+        for row in reader:
+            out.append(row)
+        logger.debug("succesfully converted csv bytes with encoding utf8")
+
+    except Exception as e:
+        logger.error("%s, could not convert csv bytes", e)
 
     finally:
         return out
