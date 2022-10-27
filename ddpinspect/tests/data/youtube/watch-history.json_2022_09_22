@@ -1,0 +1,24 @@
+[{
+  "header": "YouTube",
+  "title": "Video 1",
+  "titleUrl": "https://www.youtube.com/",
+  "subtitles": [{
+    "name": "Channel 1",
+    "url": "https://www.youtube.com/channel/channel1"
+  }],
+  "time": "2022-09-21T11:52:59.995Z",
+  "products": ["YouTube"],
+  "activityControls": ["YouTube watch history"]
+},{
+  "header": "YouTube",
+  "title": "Video 2",
+  "titleUrl": "https://www.youtube.com/",
+  "subtitles": [{
+    "name": "Channel 2",
+    "url": "https://www.youtube.com/channel/channel2"
+  }],
+  "time": "2022-09-20T21:38:27.221Z",
+  "products": ["YouTube"],
+  "activityControls": ["YouTube watch history"]
+}
+]

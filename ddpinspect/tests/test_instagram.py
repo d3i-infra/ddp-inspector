@@ -8,7 +8,7 @@ from pathlib import Path
 from ddpinspect import instagram
 from ddpinspect import unzipddp
 
-DATA_DIR = Path(__file__).resolve().parent / "data"
+DATA_DIR = Path(__file__).resolve().parent / "data" / "instagram"
 
 
 @pytest.mark.parametrize(

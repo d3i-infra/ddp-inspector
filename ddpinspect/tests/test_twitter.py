@@ -6,7 +6,7 @@ import pytest
 from pathlib import Path
 from ddpinspect import twitter
 
-DATA_DIR = Path(__file__).resolve().parent / "data"
+DATA_DIR = Path(__file__).resolve().parent / "data" / "twitter"
 
 
 @pytest.mark.parametrize("file", ["personalization.js_2022_09_20"])
@@ -34,7 +34,7 @@ def test_read_twitter_interests(file: str) -> None:
     "zipfile,expected",
     [
         ("twitter_2022_09_08.zip", "Valid Twitter zipfile"),
-        ("ads_interests.json_2022_09_22", "Bad zipfile"),
+        ("personalization.js_2022_09_20", "Bad zipfile"),
         ("empty.zip", "Not a Twitter zipfile"),
     ],
 )
