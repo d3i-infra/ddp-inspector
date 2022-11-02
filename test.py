@@ -288,8 +288,11 @@ import io
 
 
 #log to stream
-#log_stream = io.StringIO()    
-#logging.basicConfig(stream=log_stream, level=logging.INFO)
+log_stream = io.StringIO()    
+logging.basicConfig(stream=log_stream, level=logging.INFO)
+
+
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -484,4 +487,49 @@ dir(unzipddp)
 
 
 
+############################################################################
+import pandas as pd
+
+import logging
+import io
+
+#log to stream
+log_stream = io.StringIO()    
+logging.basicConfig(stream=log_stream,
+                    level=logging.DEBUG,
+                    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+                    datefmt="%Y-%m-%dT%H:%M:%S%z"
+                    )
+
+from ddpinspect import unzipddp
+from ddpinspect import scanfiles
+from ddpinspect import youtube
+
+my_zip = "./example_ddps/youtube/takeout-20220921T133717Z-001.zip"
+
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "watch-history.json")
+watch_history = unzipddp.read_json_from_bytes(my_bytes)
+df = youtube.to_df(watch_history)
+
+log_stream.getvalue()
+
+log_stream.truncate(0)
+log_stream.seek(0)
+
+pd.DataFrame(LOG_STREAM.getvalue().split("\n"), columns=["log messages"])
+
+
+def create_log_table():
+    log_string = LOG_STREAM.getvalue()  # read the log stream
+    LOG_STREAM.truncate(0)              # flush stream
+    LOG_STREAM.seek(0)
+
+    if log_string:
+        log_data = log_string.split("\n")
+    else:
+        log_data = ["no log messages"]
+
+    df_logs = pd.DataFrame(log_data, columns=["Log Messages"])
+
+    return PropsUIPromptConsentFormTable("log_messages", "Log messages:", df_logs)
 
