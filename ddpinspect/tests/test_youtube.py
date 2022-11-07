@@ -100,18 +100,25 @@ def test_youtube(
 
 
 @pytest.mark.parametrize(
-    "zipfile,expected",
+    "zipfile,expected_status_code,expected_ddp_category_id",
     [
-        ("takeout-20220921T133717Z-001_2022_09_22.zip", "Valid Youtube zipfile"),
-        ("subscriptions.csv_2022_09_22", "Bad zipfile"),
-        ("empty.zip", "Not a Youtube zipfile"),
+        ("takeout-20220921T133717Z-001_2022_09_22.zip", 0, "json_en"),
+        ("subscriptions.csv_2022_09_22", 1, None),
+        ("empty.zip", 0, None),
     ],
- )
-def test_validate_youtube_zip(zipfile: str, expected: str) -> None:
+)
+def test_validate_youtube_zip(
+    zipfile: str, expected_status_code: int, expected_ddp_category_id: str
+) -> None:
     """
     Check if twitter.js file is read correctly
     and if interests are identified
     """
 
-    result = youtube.validate_zip(DATA_DIR / zipfile)
-    assert result.get_status_description() == expected
+    validation = youtube.validate_zip(DATA_DIR / zipfile)
+    assert validation.status_code.id == expected_status_code
+
+    if expected_ddp_category_id:
+        assert validation.ddp_category.id == "json_en"
+    else:
+        assert validation.ddp_category is None

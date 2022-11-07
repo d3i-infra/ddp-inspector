@@ -1,126 +1,6 @@
 ######################################################################################################
 # My own testing grounds
 # pieces of code that I run to test stuff
- import     
-import logging
-logging.basicConfig(level=logging.INFO)
-
-from ddpinspect import scanfolder
-from ddpinspect import scanjson
-from ddpinspect import unzipddp
-
-# unzip folder leaving the folder structure in tact
-unzipddp.recursive_unzip("./Example_DDPs.zip")
-
-df_folder_structure = scanfolder.scan_folder("./Example_DDPs/Example_DDPs/Instagram_data_zenodo")
-df_json_structure = scanjson.scan_json_all("./Example_DDPs/Example_DDPs/Instagram_data_zenodo")
-
-df_folder_structure
-
-
-
-
-from pathlib import Path
-import magic
-import uuid
-import json
-import pandas as pd
-
-from examineddp.parserlib import stringparse
-
-import importlib
-
-import logging
-logging.basicConfig(level=logging.ERROR)
-
-
-import json
-
-example = "Example_DDPs/Instagram_data_zenodo/horsesarecool52_20201020/settings.json"
-example = "Example_DDPs/Instagram_data_zenodo/horsesarecool52_20201020/events.json"
-example = "Example_DDPs/Instagram_data_zenodo/horsesarecool52_20201020/account_history.json"
-example = "Example_DDPs/Instagram_data_zenodo/horsesarecool52_20201020/settings.json"
-example = "Example_DDPs/Instagram_data_zenodo/horsesarecool52_20201020/events.json"
-example = Path("Example_DDPs/Instagram_data_zenodo/horsesarecool52_20201020/account_history.json")
-example = "Example_DDPs/Instagram_data_zenodo/horsesarecool52_20201020/media.json"
-example = "Example_DDPs/Instagram_data_zenodo/horsesarecool52_20201020/searches.json"
-
-from examineddp.ddpinspect import scanjson
-importlib.reload(scanjson)
-out = scanjson.get_structure_json(example)
-out = scanjson.get_structure_json("example")
-out
-
-
-
-check = pd.DataFrame(out, columns = ["name", "objid", "parent", "str(objtype)", "info", "is_ip", "is_time", "is_url"])
-check.to_excel("check.xlsx")
-check
-
-
-check = scanjson.scan_json_in_folder("./Example_DDPs/Instagram_data_zenodo/horsesarecool52_20201020")
-check.to_excel("check.xlsx")
-
-Path(Path("./Example_DDPs/Instagram_data_zenodo/horsesarecool52_20201020")) == Path("./Example_DDPs/Instagram_data_zenodo/horsesarecool52_20201020")
-paths = Path("./Example_DDPs/Instagram_data_zenodo/horsesarecool52_20201020").glob('**/*.json')
-for p in paths:
-    print(p.name)
-
-pd.DataFrame
-
-importlib.reload(scanjson)
-
-
-test = []
-test.extend([1,2,3])
-test.extend([])
-
-########################################################
-########################################################
-########################################################
-########################################################
-# Profile code
-import cProfile
-import pstats
-
-profile = cProfile.Profile()
-profile.runcall(get_structure_json, example)
-ps = pstats.Stats(profile)
-ps.print_stats()
-
-########################################################
-test =  [ "name", "parent", "type", "info"]
-
-
-for k, i in enumerate(test):
-    print(f"{k} {i}")
-
-
-my_stamp = "2020-10-08T12:02:40+00:00"
-non_working_stamp = "asdkjaskjsad"
-non_working_stamp = None
-
-test = " asd.asd.com"
-stringparse.has_url(test, is_url=True)
-stringparse.has_url(test)
-
-
-stringparse.is_ipaddress("2a02:a210:2502:b280:d9cf:6454d:5bc2:35a")
-
-pd.to_datetime("")
-
-######################################
-# test scanning folders
-
-import logging
-logging.basicConfig(level=logging.DEBUG)
-from examineddp.ddpinspect import scanfolder
-importlib.reload(scanfolder)
-
-example = "./Example_DDPs/Google_Search_History/"
-out = scanfolder.scan_folder(example)
-out.to_excel("test.xlsx")
-
 
 ######################################
 import logging
@@ -532,4 +412,135 @@ def create_log_table():
     df_logs = pd.DataFrame(log_data, columns=["Log Messages"])
 
     return PropsUIPromptConsentFormTable("log_messages", "Log messages:", df_logs)
+
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+###########
+
+# input validation rewrite
+
+from dataclasses import dataclass, field
+from typing import Any, Type
+
+import logging
+logger = logging.getLogger(__name__)
+
+from enum import Enum
+
+class Language(Enum):
+    EN = 1
+    NL = 2
+
+class DDPFiletype(Enum):
+    JSON = 1
+    HTML = 2
+
+
+@dataclass
+class DDPCategory():
+    id: str
+    ddp_filetype: Type[DDPFiletype]
+    language: Type[Language]
+    known_files: list[str]
+
+@dataclass
+class StatusCode():
+    id: int
+    description: str
+    message: str
+
+
+DDP_CATEGORIES = [
+    DDPCategory(
+        id = "unique DDP category name 1",
+        ddp_filetype = DDPFiletype.JSON,
+        language = Language.EN,
+        known_files = ["known_file1", "known_file2"]
+    ),
+    DDPCategory(
+        id = "unique DDP category name 2",
+        ddp_filetype = DDPFiletype.JSON,
+        language = Language.NL,
+        known_files = ["bekende_file1", "bekende_file1_file2"]
+    )
+]
+
+STATUS_CODES = [
+    StatusCode(
+        id = 0,
+        description = "Valid zipfile", 
+        message = "Valid zipfile"
+    )
+]
+
+
+@dataclass
+class ValidateInput:
+    """
+    Class containing the results of input validation
+    """
+    status_codes: list[StatusCode]
+    ddp_categories: list[DDPCategory]
+    current_status_code: Type[StatusCode] | None = None
+    current_ddp_category: Type[StatusCode] | None = None
+
+    ddp_categories_lookup: dict[str: DDPCategory] = field(init=False) 
+    status_codes_lookup: dict[str: StatusCode] = field(init=False)
+
+    def infer_ddp_category(self, file_list_input: list[str]) -> bool:
+        """
+        Compares a list of files to a list of known files. 
+        From that comparison infer the DDP Category
+        """
+        prop_category = {}
+        for id, category in self.ddp_categories_lookup.items():
+            known_file_list = category.known_files
+            n_files_found = [1 if f in known_file_list else 0 for f in file_list_input]
+            prop_category[id] = sum(n_files_found) / len(known_file_list)
+
+        highest = None
+        if max(prop_category.values()):
+            highest = max(prop_category, key=prop_category.get)
+            self.current_ddp_category = self.ddp_categories_lookup[highest]
+            return True
+        else:
+            logger.info("No files: in input matched when performing input validation")
+            return False
+        
+    def __post_init__(self):
+        for sc, dc in zip(self.status_codes, self.ddp_categories):
+            assert isinstance(sc, StatusCode), "Input is not of class StatusCode"
+            assert isinstance(dc, DDPCategory), "Input is not of class DDPCategory"
+
+        self.ddp_categories_lookup = {category.id: category for category in self.ddp_categories}
+        self.status_codes_lookup = {status_code.id: status_code for status_code in self.status_codes}
+
+
+from ddpinspect.validate import DDPCategory
+DDPCategory
+ddpinspect.validate.DDPCategory
+
+
+##################################################################
+
+
+
+
 
