@@ -34,6 +34,40 @@ DDP_CATEGORIES = [
             "my-live-chat-messages.html",
             "subscriptions.csv",
         ],
+    ),
+    DDPCategory(
+        id="html_en",
+        ddp_filetype=DDPFiletype.HTML,
+        language=Language.EN,
+        known_files=[
+            "archive_browser.html",
+            "watch-history.html",
+            "my-comments.html",
+            "my-live-chat-messages.html",
+            "subscriptions.csv",
+        ],
+    ),
+    DDPCategory(
+        id="json_nl",
+        ddp_filetype=DDPFiletype.JSON,
+        language=Language.NL,
+        known_files=[
+            "archive_browser.html",
+            "kijkgeschiedenis.json",
+            "mijn-reacties.html",
+            "abonnementen.csv",
+        ],
+    ),
+    DDPCategory(
+        id="html_nl",
+        ddp_filetype=DDPFiletype.JSON,
+        language=Language.NL,
+        known_files=[
+            "archive_browser.html",
+            "kijkgeschiedenis.html",
+            "mijn-reacties.html",
+            "abonnementen.csv",
+        ],
     )
 ]
 

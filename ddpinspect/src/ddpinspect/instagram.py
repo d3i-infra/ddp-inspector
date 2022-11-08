@@ -180,6 +180,8 @@ def your_topics_to_list(dict_with_topics: dict[Any, Any]) -> list[str]:
 
         # The compleet lookup is:
         # "topics_your_topics" -> "string_map_data" -> "Name" -> "value"
+        # Dutch Language DDP is: "topics_your_topics" -> "string_map_data" -> "Naam" -> "value"
+        # Note: popitem avoids hardcoding "Name" or "Naam"
         for item in dict_with_topics["topics_your_topics"]:
             res = item["string_map_data"].popitem()
             out.append(res[1]["value"])
