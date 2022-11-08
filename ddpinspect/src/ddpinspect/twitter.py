@@ -13,34 +13,22 @@ import re
 import logging
 import zipfile
 
+from ddpinspect.validate import (
+    DDPCategory,
+    StatusCode,
+    ValidateInput,
+    Language,
+    DDPFiletype,
+)
 
 logger = logging.getLogger(__name__)
 
-
-@dataclass
-class ValidateTwitterInput:
-    """
-    Class containing data regarding input checking an Twitter zipfile for correctness
-    """
-    status_code: int = 0
-    status_message: dict[int, dict[str, str]] = field(
-        default_factory=lambda: {
-            0: {
-                "description": "Valid Twitter zipfile",
-                "message": "Valid Twitter zipfile",
-            },
-            1: {
-                "description": "Bad zipfile",
-                "message": "We could not detect a zipfile could you recheck your selected file?",
-            },
-            2: {
-                "description": "Not a Twitter zipfile",
-                "message": "We could not detect a zipfile from Twitter could you recheck your selected file?",
-            }
-        }
-    )
-    known_files: list[str] = field(
-        default_factory=lambda: [
+DDP_CATEGORIES = [
+    DDPCategory(
+        id="js_en",
+        ddp_filetype=DDPFiletype.JSON,
+        language=Language.EN,
+        known_files=[
             "manifest.js",
             "account-creation-ip.js",
             "account-label.js",
@@ -114,59 +102,40 @@ class ValidateTwitterInput:
             "twitter-shop.js",
             "user-link-clicks.js",
             "verified.js",
-        ]
+        ],
     )
+]
 
-    def get_status_message(self) -> str:
-        """ returns code message, can be shown to user """
-        return self.status_message.get(self.status_code, {}).get("message", "Not defined")
-
-    def get_status_description(self) -> str:
-        """ returns description, can be shown to debug """
-        return self.status_message.get(self.status_code, {}).get("description", "Not defined")
+STATUS_CODES = [
+    StatusCode(id=0, description="Valid zip", message="Valid zip"),
+    StatusCode(id=1, description="Bad zipfile", message="Bad zipfile"),
+]
 
 
-def validate_zip(zfile: Path) -> ValidateTwitterInput:
+def validate_zip(zfile: Path) -> ValidateInput:
     """
-    Validates the input of a twitter zipfile
-
-    Checks whether the file is a zipfile and
-    Check whether at least 30% of known "*.js" files are present in the zip
-
-    3 mutually exclusive cases are possible
-    - Not a zip
-    - Not a recognized twitter zipfile
-    - A twitter zipfile
+    Validates the input of a Youtube zipfile
     """
 
-    validate = ValidateTwitterInput()
+    validate = ValidateInput(STATUS_CODES, DDP_CATEGORIES)
 
-    files_found_with_js_suffix = []
-    # Extract filnames from twitterzip and try if its a zipfile
     try:
+        paths = []
         with zipfile.ZipFile(zfile, "r") as zf:
             for f in zf.namelist():
-                fp = Path(f)
-                if fp.suffix == ".js":
-                    files_found_with_js_suffix.append(fp.name)
+                p = Path(f)
+                if p.suffix in (".js"):
+                    logger.debug("Found: %s in zip", p.name)
+                    paths.append(p.name)
 
+        validate.set_status_code(0)
+        validate.infer_ddp_category(paths)
     except zipfile.BadZipFile:
-        validate.status_code = 1
-        return validate
-
-    # determine the percentage of known files in zipfile
-    n_files_found = [
-        1 if f in files_found_with_js_suffix else 0
-        for f in validate.known_files
-    ]
-    p_files_found = sum(n_files_found) / len(validate.known_files) * 100
-
-    # 30% of the known files should be found
-    if p_files_found <= 30:
-        validate.status_code = 2
-        return validate
+        validate.set_status_code(1)
 
     return validate
+
+
 
 
 def bytesio_to_listdict(bytes_to_read: io.BytesIO) -> list[dict[Any, Any]]:

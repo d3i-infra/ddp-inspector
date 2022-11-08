@@ -542,5 +542,15 @@ ddpinspect.validate.DDPCategory
 
 
 
+from ddpinspect import instagram
+my_zip
 
 
+        def test_validate_instagram_zip(zipfile: str, expected: str) -> None:
+    """
+    Check if twitter.js file is read correctly
+    and if interests are identified
+    """
+
+    validation = instagram.validate_zip(DATA_DIR / zipfile)
+    assert validation.status_code.id == expected

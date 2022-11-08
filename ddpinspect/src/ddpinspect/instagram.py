@@ -10,124 +10,84 @@ from dataclasses import dataclass, field
 import logging
 import zipfile
 
+from ddpinspect.validate import (
+    DDPCategory,
+    StatusCode,
+    ValidateInput,
+    Language,
+    DDPFiletype,
+)
 
 logger = logging.getLogger(__name__)
 
-
-@dataclass
-class ValidateInstagramInput:
-    """
-    Class containing data regarding input checking an Instagram zipfile for correctness
-    """
-    status_code: int = 0
-    status_message: dict[int, dict[str, str]] = field(
-        default_factory=lambda: {
-            0: {
-                "description": "Valid Instagram zipfile",
-                "message": "Valid Instagram zipfile",
-            },
-            1: {
-                "description": "Bad zipfile",
-                "message": "We could not detect a zipfile could you recheck your selected file?",
-            },
-            2: {
-                "description": "Not an Instagram zipfile",
-                "message": "We could not detect a zipfile from Instagram could you recheck your selected file?",
-            },
-            3: {
-                "description": "Instagram zipfile did not contain json",
-                "message": "We detected an Instagram zipfile but not in the correct format, could you download the json format instead of the html format?",
-            },
-        }
+DDP_CATEGORIES = [
+    DDPCategory(
+        id="json_en",
+        ddp_filetype=DDPFiletype.JSON,
+        language=Language.EN,
+        known_files=[
+            "secret_conversations.json",
+            "personal_information.json",
+            "account_privacy_changes.json",
+            "account_based_in.json",
+            "recently_deleted_content.json",
+            "liked_posts.json",
+            "stories.json",
+            "profile_photos.json",
+            "followers.json",
+            "signup_information.json",
+            "comments_allowed_from.json",
+            "login_activity.json",
+            "your_topics.json",
+            "camera_information.json",
+            "recent_follow_requests.json",
+            "devices.json",
+            "professional_information.json",
+            "follow_requests_you've_received.json",
+            "eligibility.json",
+            "pending_follow_requests.json",
+            "videos_watched.json",
+            "ads_interests.json",
+            "account_searches.json",
+            "following.json",
+            "posts_viewed.json",
+            "recently_unfollowed_accounts.json",
+            "post_comments.json",
+            "account_information.json",
+            "accounts_you're_not_interested_in.json",
+            "use_cross-app_messaging.json",
+            "profile_changes.json",
+            "reels.json",
+        ],
     )
-    known_files: list[str] = field(
-        default_factory=lambda: [
-            "secret_conversations",
-            "personal_information",
-            "account_privacy_changes",
-            "account_based_in",
-            "recently_deleted_content",
-            "liked_posts",
-            "stories",
-            "profile_photos",
-            "followers",
-            "signup_information",
-            "comments_allowed_from",
-            "login_activity",
-            "your_topics",
-            "camera_information",
-            "recent_follow_requests",
-            "devices",
-            "professional_information",
-            "follow_requests_you've_received",
-            "eligibility",
-            "pending_follow_requests",
-            "videos_watched",
-            "ads_interests",
-            "account_searches",
-            "following",
-            "posts_viewed",
-            "recently_unfollowed_accounts",
-            "post_comments",
-            "account_information",
-            "accounts_you're_not_interested_in",
-            "use_cross-app_messaging",
-            "profile_changes",
-            "reels",
-        ]
-    )
+]
 
-    def get_status_message(self) -> str:
-        """ returns code message, can be shown to user """
-        return self.status_message.get(self.status_code, {}).get("message", "Not defined")
-
-    def get_status_description(self) -> str:
-        """ returns description, can be shown to debug """
-        return self.status_message.get(self.status_code, {}).get("description", "Not defined")
+STATUS_CODES = [
+    StatusCode(id=0, description="Valid zip", message="Valid zip"),
+    StatusCode(id=1, description="Bad zipfile", message="Bad zipfile"),
+]
 
 
-def validate_zip(zfile: Path) -> ValidateInstagramInput:
+def validate_zip(zfile: Path) -> ValidateInput:
     """
-    Validates the input of an instagram zipfile
-
-    Checks whether the file is a zipfile
-    Checks whether its a zipfile containing html or json
-    Check whether at least 30% of known "*.json" files are present in the zip
-
-    3 mutually exclusive cases are possible
-    - Not a zip
-    - Not a recognized instagram zipfile
-    - Not a json instagram zipfile
-    - An instagram zipfile
+    Validates the input of an Instagram zipfile
     """
-    validate = ValidateInstagramInput()
 
-    paths = []
+    validate = ValidateInput(STATUS_CODES, DDP_CATEGORIES)
+
     try:
+        paths = []
         with zipfile.ZipFile(zfile, "r") as zf:
             for f in zf.namelist():
                 p = Path(f)
                 if p.suffix in (".html", ".json"):
-                    paths.append(p)
+                    logger.debug("Found: %s in zip", p.name)
+                    paths.append(p.name)
 
+        validate.set_status_code(0)
+        validate.infer_ddp_category(paths)
     except zipfile.BadZipFile:
-        validate.status_code = 1
-        return validate
-
-    # determine the percentage of known files in zipfile
-    # 30% of the known files should be found
-    stems = [p.stem for p in paths]
-    n_files_found = [1 if f in stems else 0 for f in validate.known_files]
-    p_files_found = sum(n_files_found) / len(validate.known_files) * 100
-    if p_files_found <= 30:
-        validate.status_code = 2
-        return validate
-
-    # Check whether there are more json than html files in zip
-    suffixes = [p.suffix for p in paths]
-    if suffixes.count(".json") < suffixes.count(".html"):
-        validate.status_code = 3
-        return validate
+        validate.set_status_code(1)
 
     return validate
 

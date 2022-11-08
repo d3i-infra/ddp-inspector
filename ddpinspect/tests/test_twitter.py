@@ -33,9 +33,9 @@ def test_read_twitter_interests(file: str) -> None:
 @pytest.mark.parametrize(
     "zipfile,expected",
     [
-        ("twitter_2022_09_08.zip", "Valid Twitter zipfile"),
-        ("personalization.js_2022_09_20", "Bad zipfile"),
-        ("empty.zip", "Not a Twitter zipfile"),
+        ("twitter_2022_09_08.zip", 0),
+        ("personalization.js_2022_09_20", 1),
+        ("empty.zip", 0),
     ],
 )
 def test_validate_twitter_zip(zipfile: str, expected: str) -> None:
@@ -43,5 +43,5 @@ def test_validate_twitter_zip(zipfile: str, expected: str) -> None:
     Test the input validation for a twitter.zip
     """
 
-    result = twitter.validate_zip(DATA_DIR / zipfile)
-    assert result.get_status_description() == expected
+    validation = twitter.validate_zip(DATA_DIR / zipfile)
+    assert validation.status_code.id == expected

@@ -47,10 +47,10 @@ def test_instagram_function(fun_to_test: str, file: str, result: list) -> None:
 @pytest.mark.parametrize(
     "zipfile,expected",
     [
-        ("instagram_2022_09_26.zip", "Valid Instagram zipfile"),
-        ("instagram_html_2022_09_26.zip", "Instagram zipfile did not contain json"),
-        ("ads_interests.json_2022_09_22", "Bad zipfile"),
-        ("empty.zip", "Not an Instagram zipfile"),
+        ("instagram_2022_09_26.zip", 0),
+        ("instagram_html_2022_09_26.zip", 0),
+        ("ads_interests.json_2022_09_22", 1),
+        ("empty.zip", 0),
     ],
 )
 def test_validate_instagram_zip(zipfile: str, expected: str) -> None:
@@ -59,5 +59,5 @@ def test_validate_instagram_zip(zipfile: str, expected: str) -> None:
     and if interests are identified
     """
 
-    result = instagram.validate_zip(DATA_DIR / zipfile)
-    assert result.get_status_description() == expected
+    validation = instagram.validate_zip(DATA_DIR / zipfile)
+    assert validation.status_code.id == expected
