@@ -6,7 +6,6 @@ This module contains functions to handle *.jons files contained within an instag
 
 from typing import Any
 from pathlib import Path
-from dataclasses import dataclass, field
 import logging
 import zipfile
 

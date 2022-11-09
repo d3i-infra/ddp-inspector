@@ -6,12 +6,11 @@ This module contains functions to handle *.js files contained within a twitter d
 
 from pathlib import Path
 from typing import Any
-from dataclasses import dataclass, field
+import logging
+import zipfile
 import json
 import io
 import re
-import logging
-import zipfile
 
 from ddpinspect.validate import (
     DDPCategory,
@@ -134,8 +133,6 @@ def validate_zip(zfile: Path) -> ValidateInput:
         validate.set_status_code(1)
 
     return validate
-
-
 
 
 def bytesio_to_listdict(bytes_to_read: io.BytesIO) -> list[dict[Any, Any]]:
