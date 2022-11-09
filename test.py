@@ -414,143 +414,41 @@ def create_log_table():
     return PropsUIPromptConsentFormTable("log_messages", "Log messages:", df_logs)
 
 ###########
-###########
-###########
-###########
-###########
-###########
-###########
-###########
-###########
-###########
-###########
-###########
-###########
-###########
-###########
-###########
-###########
-###########
-###########
-###########
-
-# input validation rewrite
-
-from dataclasses import dataclass, field
-from typing import Any, Type
-
-import logging
-logger = logging.getLogger(__name__)
-
-from enum import Enum
-
-class Language(Enum):
-    EN = 1
-    NL = 2
-
-class DDPFiletype(Enum):
-    JSON = 1
-    HTML = 2
-
-
-@dataclass
-class DDPCategory():
-    id: str
-    ddp_filetype: Type[DDPFiletype]
-    language: Type[Language]
-    known_files: list[str]
-
-@dataclass
-class StatusCode():
-    id: int
-    description: str
-    message: str
-
-
-DDP_CATEGORIES = [
-    DDPCategory(
-        id = "unique DDP category name 1",
-        ddp_filetype = DDPFiletype.JSON,
-        language = Language.EN,
-        known_files = ["known_file1", "known_file2"]
-    ),
-    DDPCategory(
-        id = "unique DDP category name 2",
-        ddp_filetype = DDPFiletype.JSON,
-        language = Language.NL,
-        known_files = ["bekende_file1", "bekende_file1_file2"]
-    )
-]
-
-STATUS_CODES = [
-    StatusCode(
-        id = 0,
-        description = "Valid zipfile", 
-        message = "Valid zipfile"
-    )
-]
-
-
-@dataclass
-class ValidateInput:
-    """
-    Class containing the results of input validation
-    """
-    status_codes: list[StatusCode]
-    ddp_categories: list[DDPCategory]
-    current_status_code: Type[StatusCode] | None = None
-    current_ddp_category: Type[StatusCode] | None = None
-
-    ddp_categories_lookup: dict[str: DDPCategory] = field(init=False) 
-    status_codes_lookup: dict[str: StatusCode] = field(init=False)
-
-    def infer_ddp_category(self, file_list_input: list[str]) -> bool:
-        """
-        Compares a list of files to a list of known files. 
-        From that comparison infer the DDP Category
-        """
-        prop_category = {}
-        for id, category in self.ddp_categories_lookup.items():
-            known_file_list = category.known_files
-            n_files_found = [1 if f in known_file_list else 0 for f in file_list_input]
-            prop_category[id] = sum(n_files_found) / len(known_file_list)
-
-        highest = None
-        if max(prop_category.values()):
-            highest = max(prop_category, key=prop_category.get)
-            self.current_ddp_category = self.ddp_categories_lookup[highest]
-            return True
-        else:
-            logger.info("No files: in input matched when performing input validation")
-            return False
-        
-    def __post_init__(self):
-        for sc, dc in zip(self.status_codes, self.ddp_categories):
-            assert isinstance(sc, StatusCode), "Input is not of class StatusCode"
-            assert isinstance(dc, DDPCategory), "Input is not of class DDPCategory"
-
-        self.ddp_categories_lookup = {category.id: category for category in self.ddp_categories}
-        self.status_codes_lookup = {status_code.id: status_code for status_code in self.status_codes}
-
-
-from ddpinspect.validate import DDPCategory
-DDPCategory
-ddpinspect.validate.DDPCategory
-
 
 ##################################################################
 
-
-
 from ddpinspect import instagram
-my_zip
+my_zip = "/home/turbo/ddp-inspector/example_ddps/instagram/turboknul_20220921.zip"
 
 
-        def test_validate_instagram_zip(zipfile: str, expected: str) -> None:
-    """
-    Check if twitter.js file is read correctly
-    and if interests are identified
-    """
+validation = instagram.validate_zip(my_zip)
+validation.status_code.id
+validation
+assert validation.status_code.id == expected
 
-    validation = instagram.validate_zip(DATA_DIR / zipfile)
-    assert validation.status_code.id == expected
+
+
+##################################################################
+import logging 
+logging.basicConfig(level=logging.DEBUG)
+
+from ddpinspect import facebook
+from ddpinspect import unzipddp
+my_zip = "/home/turbo/ddp-inspector/example_ddps/facebook/facebook.zip"
+
+
+validation = facebook.validate_zip(my_zip)
+validation.status_code.id
+
+
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "ads_interests.json")
+res = unzipddp.read_json_from_bytes(my_bytes)
+facebook.interests_to_list(res)
+
+
+res["topics_v2"]
+
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "your_topics.json")
+res = unzipddp.read_json_from_bytes(my_bytes)
+res
+facebook.your_topics_to_list(res)
