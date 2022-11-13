@@ -459,54 +459,15 @@ facebook.your_topics_to_list(res)
 # Comments scrape
 
 import logging 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 from ddpinspect import unzipddp
+from ddpinspect import youtube
 
+my_zip = "/home/turbo/ddp-inspector/example_ddps/youtube/takeout_nl.zip"
 my_zip = "/home/turbo/ddp-inspector/example_ddps/youtube/takeout-20220921T133717Z-001.zip"
+
 my_bytes = unzipddp.extract_file_from_zip(my_zip, "my-comments.html")
-
-import pandas as pd
-
-from bs4 import BeautifulSoup
-
-
-def comments_to_df(comments):
-    """
-    Parse comments from Youtube DDP
-    Function can handle any language 
-    Note a tradeoff has been made between having clean data and interpretability for the participant
-    """
-
-    data_set = []
-
-    # Big try except block due to lack of time
-    try:
-        soup = BeautifulSoup(comments, "html.parser")
-        items = soup.find_all("li")
-        for item in items:
-            data_point = {}
-
-            # Extract comments
-            content = item.get_text(separator="<SEP>").split("<SEP>")
-            message = content.pop()
-            action = ''.join(content)
-            data_point["Comment"] = message
-            data_point["Type of comment"] = action
-
-            # Extract references
-            for i, ref in enumerate(item.find_all("a")):
-                data_point[f"Context of comment {i + 1}"] = ref.text  + ': ' + ref.get("href")
-                
-            data_set.append(data_point)
-
-        df = pd.DataFrame(data_set)
-    except:
-        df = pd.DataFrame()
-        
-    return df
-
-
-df.to_excel("./TEST_EXCEL.xlsx")
-
+df = youtube.comments_to_df(my_bytes)
+df
 
