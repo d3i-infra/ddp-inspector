@@ -8,8 +8,10 @@ from pathlib import Path
 from typing import Any
 import logging
 import zipfile
+import io
 
 import pandas as pd
+from bs4 import BeautifulSoup
 
 from ddpinspect.validate import (
     DDPCategory,
@@ -68,7 +70,7 @@ DDP_CATEGORIES = [
             "mijn-reacties.html",
             "abonnementen.csv",
         ],
-    )
+    ),
 ]
 
 STATUS_CODES = [
@@ -124,3 +126,44 @@ def to_df(youtube_list: list[dict[Any, Any]]) -> pd.DataFrame:
 
     finally:
         return df_out
+
+
+def comments_to_df(comments: io.BytesIO) -> pd.DataFrame:
+    """
+    Parse comments from Youtube DDP
+    Function can handle any language
+    Note a tradeoff has been made between, having clean data and interpretability for the participant
+    """
+
+    data_set = []
+    df = pd.DataFrame()
+
+    # Big try except block due to lack of time
+    try:
+        soup = BeautifulSoup(comments, "html.parser")
+        items = soup.find_all("li")
+        for item in items:
+            data_point = {}
+
+            # Extract comments
+            content = item.get_text(separator="<SEP>").split("<SEP>")
+            message = content.pop()
+            action = "".join(content)
+            data_point["Comment"] = message
+            data_point["Type of comment"] = action
+
+            # Extract references
+            for i, ref in enumerate(item.find_all("a")):
+                data_point[f"Context of comment {i + 1}"] = (
+                    ref.text + ": " + ref.get("href")
+                )
+
+            data_set.append(data_point)
+
+        df = pd.DataFrame(data_set)
+
+    except Exception as e:
+        logger.error("Exception was caught:  %s", e)
+
+    finally:
+        return df
