@@ -351,13 +351,27 @@ logging.basicConfig(level=logging.DEBUG)
 from ddpinspect import unzipddp
 from ddpinspect import scanfiles
 from ddpinspect import youtube
-
+import pandas as pd
 
 my_zip = "./example_ddps/youtube/takeout-20220921T133717Z-001.zip"
 
 my_bytes = unzipddp.extract_file_from_zip(my_zip, "watch-history.json")
 watch_history = unzipddp.read_json_from_bytes(my_bytes)
-df = youtube.watch_history_to_df(watch_history)
+df = youtube.to_df(watch_history)
+
+
+def crunch_df(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Remove all columns that have constant values
+    if the number of rows is larger than 1
+    """
+    if len(df.index) > 1:
+        cols = df.columns[df.nunique(dropna=False) >= 2]
+        df = df[cols]
+
+    return df
+
+x = crunch_df(pd.DataFrame())
 
 df.to_excel("watch_history.xlsx")
 
@@ -470,4 +484,14 @@ my_zip = "/home/turbo/ddp-inspector/example_ddps/youtube/takeout-20220921T133717
 my_bytes = unzipddp.extract_file_from_zip(my_zip, "my-comments.html")
 df = youtube.comments_to_df(my_bytes)
 df
+
+
+
+df.columns[df.nunique() >= 2]
+
+len(df.index)
+
+
+
+
 
