@@ -118,6 +118,7 @@ def to_df(youtube_list: list[dict[Any, Any]]) -> pd.DataFrame:
             raise TypeError("Incorrect input type expected dict or list")
 
         df_out = pd.DataFrame([scanfiles.dict_denester(item) for item in youtube_list])
+        df_out = scanfiles.remove_const_cols_from_df(df_out)
 
     except TypeError as e:
         logger.error(e)

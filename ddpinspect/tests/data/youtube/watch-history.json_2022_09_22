@@ -1,7 +1,7 @@
 [{
   "header": "YouTube",
   "title": "Video 1",
-  "titleUrl": "https://www.youtube.com/",
+  "titleUrl": "https://www.youtube.com/video1",
   "subtitles": [{
     "name": "Channel 1",
     "url": "https://www.youtube.com/channel/channel1"
@@ -12,7 +12,7 @@
 },{
   "header": "YouTube",
   "title": "Video 2",
-  "titleUrl": "https://www.youtube.com/",
+  "titleUrl": "https://www.youtube.com/video2",
   "subtitles": [{
     "name": "Channel 2",
     "url": "https://www.youtube.com/channel/channel2"

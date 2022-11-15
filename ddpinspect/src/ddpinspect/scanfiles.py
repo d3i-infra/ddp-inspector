@@ -274,3 +274,15 @@ def dict_denester(
         new.update({name[1:]: inp})  # type: ignore
 
     return new  # type: ignore
+
+
+def remove_const_cols_from_df(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Remove all columns that have constant values
+    if the number of rows is larger than 1
+    """
+    if len(df.index) > 1:
+        cols = df.columns[df.nunique(dropna=False) >= 2]
+        df = df[cols]
+
+    return df
