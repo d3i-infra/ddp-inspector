@@ -359,7 +359,6 @@ my_bytes = unzipddp.extract_file_from_zip(my_zip, "watch-history.json")
 watch_history = unzipddp.read_json_from_bytes(my_bytes)
 df = youtube.to_df(watch_history)
 
-
 def crunch_df(df: pd.DataFrame) -> pd.DataFrame:
     """
     Remove all columns that have constant values
@@ -487,11 +486,117 @@ df
 
 
 
-df.columns[df.nunique() >= 2]
+##################################################################
+# check if
 
-len(df.index)
+import logging 
+logging.basicConfig(level=logging.INFO)
+
+from ddpinspect import twitter
+from ddpinspect import unzipddp
+
+myzip = "./example_ddps/twitter/twitter-2022-09-08-7b4bc3e1887ddc4becc57fb106a7a4e86751b45fa7b18258909a2a52bd73af08.zip"
+my_bytes = unzipddp.extract_file_from_zip(myzip, "account.js")  
+my_dict = twitter.bytesio_to_listdict(my_bytes)
+check = twitter.account_created_at_to_list(my_dict)
+check
 
 
+
+##################################################################
+# instgram creation date
+# Go with dict_denester approach
+# easier to deal with in the future
+
+from ddpinspect import unzipddp
+from ddpinspect import instagram
+from ddpinspect import scanfiles
+from parserlib import stringparse
+
+dir(parserlib)
+
+my_zip = "./example_ddps/instagram/turboknul_20220921.zip"
+
+logging.basicConfig(level=logging.DEBUG)
+
+# Happy flow
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "signup_information.json")  
+my_dict = unzipddp.read_json_from_bytes(my_bytes)
+my_dict
+
+
+dir(stringparse)
+
+from itertools import product
+import re
+
+
+from datetime import datetime, timezone
+
+class CannotConvertEpochTimestamp(Exception):
+    """"Raise when epoch timestamp cannot be converted to isoformat"""
+    pass
+
+
+def epoch_to_iso(epoch_timestamp: str | int) -> str:
+    try:
+        epoch_timestamp = int(epoch_timestamp)
+        out = datetime.fromtimestamp(epoch_timestamp, tz=timezone.utc).isoformat()
+    except (OverflowError, OSError, ValueError, TypeError) as e:
+        raise CannotConvertEpochTimestamp(f"Cannot convert epoch timestamp: {e}")
+
+    return out
+
+
+epoch_to_iso({})
+
+
+def account_created_at_to_list(my_dict):
+    """
+    Returns account created at timestamp in iso format
+
+    This function flattens the json structure first.
+    By flattening the json structure, you can look up
+    keys starting from behind. Only the Last N keys matter for the look up.
+
+    Note: decide later whether this code can be made more general
+    """
+    search_keys_list = [
+            ["Tijd", "timestamp"],
+            ["Time", "timestamp"],
+            ["profile_v2", "registration_timestamp"],
+        ]
+    out = []
+
+    try:
+        d = scanfiles.dict_denester(my_dict)
+
+        for (k, v), search_keys in product(d.items(), search_keys_list):
+            pattern = re.compile(f"^.*{'_'.join(search_keys)}$")
+            if pattern.match(k):
+                out = [epoch_to_iso(v)]
+                break
+        else:
+            print("ASD")
+
+    except CannotConvertEpochTimestamp as e:
+        print("TEST: {e}")
+    except Exception as e:
+        print(e)
+
+    finally:
+        return out
+
+
+scanfiles.dict_denester(my_dict)
+account_created_at_to_list(my_dict)
+
+
+my_zip = "/home/turbo/ddp-inspector/example_ddps/facebook/facebook-niek.zip"
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "profile_information.json")  
+my_dict = unzipddp.read_json_from_bytes(my_bytes)
+
+my_dict
 
 
 

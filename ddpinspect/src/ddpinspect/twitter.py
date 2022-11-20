@@ -192,7 +192,35 @@ def interests_to_list(interest_list: list[dict[Any, Any]]) -> list[str]:
     except TypeError as e:
         logger.error("The input list did not contain a dict: %s", e)
     except KeyError as e:
-        logger.error("The a dict did not contain the interests: %s", e)
+        logger.error("The a dict did not contain the correct lookup key: %s", e)
+    except Exception as e:
+        logger.error("Exception was caught: %s", e)
+
+    finally:
+        return out
+
+
+def account_created_at_to_list(account_info_list: list[dict[Any, Any]]) -> list[str]:
+    """
+    Returns the account creation date from account.js
+    """
+    out = []
+
+    try:
+        dict_with_account_info = account_info_list[0]
+
+        if not isinstance(dict_with_account_info, dict):
+            raise TypeError("The first item in interest_list is not a dict")
+
+        dict_with_account_info = dict_with_account_info["account"]
+        out = [dict_with_account_info["createdAt"]]
+
+    except IndexError as e:
+        logger.error("The input object is an empty list: %s", e)
+    except TypeError as e:
+        logger.error("The input list did not contain a dict: %s", e)
+    except KeyError as e:
+        logger.error("The a dict did not contain the correct lookup key: %s", e)
     except Exception as e:
         logger.error("Exception was caught: %s", e)
 

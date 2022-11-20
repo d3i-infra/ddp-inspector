@@ -114,7 +114,7 @@ def interests_to_list(dict_with_interests: dict[Any, Any]) -> list[str]:
             out.append(res[1]["value"])
 
     except TypeError as e:
-        logger.error("The input list did not contain a dict: %s", e)
+        logger.error("TypeError: %s", e)
     except KeyError as e:
         logger.error("The a dict did not contain key: %s", e)
     except Exception as e:
@@ -146,7 +146,7 @@ def your_topics_to_list(dict_with_topics: dict[Any, Any]) -> list[str]:
             out.append(res[1]["value"])
 
     except TypeError as e:
-        logger.error("The input list did not contain a dict: %s", e)
+        logger.error("TypeError: %s", e)
     except KeyError as e:
         logger.error("The a dict did not contain the key: %s", e)
     except Exception as e:

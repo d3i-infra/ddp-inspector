@@ -210,7 +210,7 @@ def convert_datetime_str(datetime_str: list[str] | list[int]) -> pd.DatetimeInde
 
     If timestamp format cannot be detected with infer_datetime_format
     dateutils.parser.parse() is used with dayfirst is true setting
-    Interpretering everything as DD/MM/YYYY except if that results in incorrect interpretation,
+    Interpretering everything as DD/MM/YYYY except if that results in an impossible date,
     then MM/DD/YYYY is used
 
     YYYY/MM/DD formats not ISO 8601 will be interpreted incorrectly, as YYYY/DD/MM if possible
@@ -222,12 +222,13 @@ def convert_datetime_str(datetime_str: list[str] | list[int]) -> pd.DatetimeInde
     Note 2: This is a very complicated problem to solve, solving this problem myself is too difficult
     for what I might expect to gain in accuracy
 
+    Note 3: if time is converted from epoch utc is used
+
     Concluding: Although a lot can go wrong, I expect the impact will be minor,
     When american formats are encourted regularly things will go wrong most often
     """
     out = None
     try:
-
         if is_isoformat(datetime_str, 10):
             out = pd.to_datetime(datetime_str)
 
@@ -245,4 +246,5 @@ def convert_datetime_str(datetime_str: list[str] | list[int]) -> pd.DatetimeInde
     except (ValueError, TypeError, OverflowError) as e:
         logger.error("Could not convert timestamps: %s", e)
 
-    return out
+    finally:
+        return out
