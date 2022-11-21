@@ -2,17 +2,21 @@
 This module contains functions to classify strings found in data download packages
 """
 
+from datetime import datetime, timezone
 import ipaddress
-import re
 import warnings
 import logging
+import re
 
 import pandas as pd
 
 from parserlib import urldetectionregex
 
-
 logger = logging.getLogger(__name__)
+
+
+class CannotConvertEpochTimestamp(Exception):
+    """"Raise when epoch timestamp cannot be converted to isoformat"""
 
 
 def is_timestamp(input_string: str) -> bool:
@@ -190,6 +194,22 @@ def is_epoch(datetime_int: list[int] | list[str], check_minimum: int) -> bool:
 
     logger.debug("Epoch timestamp detected")
     return True
+
+
+def epoch_to_iso(epoch_timestamp: str | int) -> str:
+    """
+    Convert epoch timestamp to an ISO 8601 string. Assumes UTC.
+
+    If timestamp cannot be converted raise CannotConvertEpochTimestamp
+    """
+    try:
+        epoch_timestamp = int(epoch_timestamp)
+        out = datetime.fromtimestamp(epoch_timestamp, tz=timezone.utc).isoformat()
+    except (OverflowError, OSError, ValueError, TypeError) as e:
+        logger.error("Could not convert epoch time timestamp, %s", e)
+        raise CannotConvertEpochTimestamp("Cannot convert epoch timestamp") from e
+
+    return out
 
 
 def convert_datetime_str(datetime_str: list[str] | list[int]) -> pd.DatetimeIndex | None:

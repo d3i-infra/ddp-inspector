@@ -3,12 +3,16 @@ DDP facebook module
 
 This module contains functions to handle *.jons files contained within a facebook ddp
 """
-
+from itertools import product
 from typing import Any
 from pathlib import Path
 import logging
 import zipfile
+import re
 
+from parserlib.stringparse import CannotConvertEpochTimestamp
+from parserlib import stringparse
+from ddpinspect import scanfiles
 from ddpinspect.validate import (
     DDPCategory,
     StatusCode,
@@ -166,6 +170,43 @@ def your_topics_to_list(dict_with_topics: dict[Any, Any]) -> list[str]:
         logger.error("The a dict did not contain the key: %s", e)
     except Exception as e:
         logger.error("Exception was caught:  %s", e)
+
+    finally:
+        return out
+
+
+def account_created_at_to_list(account_info_dict: dict[Any, Any]) -> list[str]:
+    """
+    Returns account created at timestamp in iso format
+
+    This function flattens the json structure first.
+    Flattening the json structure first allows you to look up
+    keys starting from the back. Only the Last N keys matter for the look up.
+
+    Note:
+        * Decide later whether this code can be made more generally available
+        * Add search keys in the list below
+    """
+    search_keys_list = [
+            ["profile_v2", "registration_timestamp"],
+        ]
+    out = []
+
+    try:
+        d = scanfiles.dict_denester(account_info_dict)
+
+        for (k, v), search_keys in product(d.items(), search_keys_list):
+            pattern = re.compile(f"^.*{'_'.join(search_keys)}$")
+            if pattern.match(k):
+                out = [stringparse.epoch_to_iso(v)]
+                break
+        else:
+            logger.info("Search keys not found: No timestamp to convert")
+
+    except CannotConvertEpochTimestamp as e:
+        logger.error("Cannot convert timestamp: %s", e)
+    except Exception as e:
+        logger.error("Exception: %s", e)
 
     finally:
         return out

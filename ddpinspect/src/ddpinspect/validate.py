@@ -72,9 +72,10 @@ class ValidateInput:
         if max(prop_category.values()) >= 5:
             highest = max(prop_category, key=prop_category.get)  # type: ignore
             self.ddp_category = self.ddp_categories_lookup[highest]
+            logger.info("Detected DDP category: %s", self.ddp_category.id)
             return True
 
-        logger.info("No files: in input matched when performing input validation")
+        logger.info("Not a valid input; not enough files matched when performing input validation")
         return False
 
     def set_status_code(self, code: int):
