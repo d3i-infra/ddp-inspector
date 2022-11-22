@@ -97,7 +97,7 @@ def validate_zip(zfile: Path) -> ValidateInput:
     return validate
 
 
-def interests_to_list(dict_with_interests: dict[Any, Any]) -> list[str]:
+def interests_to_list(dict_with_interests: dict[Any, Any] | Any) -> list[str]:
     """
     This function extracts instagram interests from a dict
     This dict should be obtained from ads_interests.json
@@ -130,7 +130,7 @@ def interests_to_list(dict_with_interests: dict[Any, Any]) -> list[str]:
         return out
 
 
-def your_topics_to_list(dict_with_topics: dict[Any, Any]) -> list[str]:
+def your_topics_to_list(dict_with_topics: dict[Any, Any] | Any) -> list[str]:
     """
     This function extracts instagram your_topics from a dict
     This dict should be obtained from your_topics.json
@@ -162,7 +162,7 @@ def your_topics_to_list(dict_with_topics: dict[Any, Any]) -> list[str]:
         return out
 
 
-def account_created_at_to_list(account_info_dict: dict[Any, Any]) -> list[str]:
+def account_created_at_to_list(account_info_dict: dict[Any, Any] | Any) -> list[str]:
     """
     Returns account created at timestamp in iso format
 

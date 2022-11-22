@@ -103,7 +103,7 @@ def validate_zip(zfile: Path) -> ValidateInput:
     return validate
 
 
-def to_df(youtube_list: list[dict[Any, Any]]) -> pd.DataFrame:
+def to_df(youtube_list: list[dict[Any, Any]] | Any) -> pd.DataFrame:
     """
     Converts list[dict[Any, Any]] obtained from youtube to pd.DataFrame
 
