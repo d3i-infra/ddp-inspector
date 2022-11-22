@@ -4,9 +4,9 @@ Contains functions to deal with zipfiles
 
 from pathlib import Path
 from typing import Any
+import zipfile
 import json
 import csv
-import zipfile
 import time
 import os
 import io
