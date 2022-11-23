@@ -529,6 +529,26 @@ my_bytes = unzipddp.extract_file_from_zip(my_zip, "profile_information.json")
 my_dict = unzipddp.read_json_from_bytes(my_bytes)
 facebook.account_created_at_to_list(my_dict)
 
+###########################################
+# test rewritten read_json_from_file 
+
+from ddpinspect import unzipddp
+from ddpinspect import instagram
+from ddpinspect import facebook
+from ddpinspect import scanfiles
+import logging
+import io
+
+
+logging.basicConfig(level=logging.DEBUG)
+
+json_to_test = io.BytesIO(b'\xef\xbb\xbf{"a":"b"}')
+unzipddp.read_json_from_bytes(json_to_test)
+
+
+json_to_test = io.BytesIO(b'{"a":"b"}')
+unzipddp.read_json_from_bytes(json_to_test)
+
 
 
 

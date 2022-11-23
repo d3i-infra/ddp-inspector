@@ -4,14 +4,13 @@ Contains functions to deal with zipfiles
 
 from pathlib import Path
 from typing import Any
+import logging
 import zipfile
 import json
 import csv
 import time
 import os
 import io
-
-import logging
 
 from ddpinspect.my_exceptions import FileNotFoundInZipError
 
@@ -85,34 +84,61 @@ def extract_file_from_zip(zfile: str, file_to_extract: str) -> io.BytesIO:
         return file_to_extract_bytes
 
 
+def _read_json_from_bytes(json_bytes: io.BytesIO, encoding: str) -> dict[Any, Any] | list[Any]:
+    """
+    Dunder function that converts bytes buffer to a json
+    Performs several checks (see code).
+
+    Swallows all exceptions, except json.JSONDecodeError
+
+    The non-dunder variant tries different encodings
+    """
+    out: dict[Any, Any] | list[Any] = {}
+
+    try:
+        stream = io.TextIOWrapper(json_bytes, encoding=encoding)
+        result = json.load(stream)
+
+        if not isinstance(result, (dict, list)):
+            raise TypeError("Did not convert bytes to a list or dict, but to another type instead")
+
+        out = result
+        logger.debug("Succesfully converted json bytes with encoding: %s", encoding)
+
+    except json.JSONDecodeError:
+        logger.debug("Cannot decode json with encoding: %s", encoding)
+        raise
+    except TypeError as e:
+        logger.error("%s, could not convert json bytes", e)
+    except Exception as e:
+        logger.error("%s, could not convert json bytes", e)
+
+    return out
+
+
 def read_json_from_bytes(json_bytes: io.BytesIO) -> dict[Any, Any] | list[Any]:
     """
-    Reads json from file if succesful it returns the result from json.load()
+    Reads json from bytes buffer, if succesful it returns the result from json.load()
+
+    Tries several encodings in sequence.
+    In case of exceptions returns empty dict.
+    Is case json.load() converted to something other than dict or list return empty dict
     """
+
     out: dict[Any, Any] | list[Any] = {}
 
     # Stream might need to be reopened again after a failed read
     b = json_bytes.read()
 
-    try:
-        stream = io.TextIOWrapper(io.BytesIO(b), encoding="utf8")
-        out = json.load(stream)
-        logger.debug("succesfully converted json bytes with encoding utf8")
-
-    except json.JSONDecodeError:
-        logger.debug("Trying utf-8-sig encoding")
+    encodings = ["utf8", "utf-8-sig"]
+    for encoding in encodings:
         try:
-            stream = io.TextIOWrapper(io.BytesIO(b), encoding="utf-8-sig")
-            out = json.load(stream)
-            logger.debug("succesfully opened json bytes with encoding utf-8-sig")
-        except Exception as e:
-            logger.error("%s, could not convert json bytes", e)
+            out = _read_json_from_bytes(io.BytesIO(b), encoding=encoding)
+            break
+        except json.JSONDecodeError:
+            pass
 
-    except Exception as e:
-        logger.error("%s, could not convert json bytes", e)
-
-    finally:
-        return out
+    return out
 
 
 def read_csv_from_bytes(json_bytes: io.BytesIO) -> list[dict[Any, Any]]:

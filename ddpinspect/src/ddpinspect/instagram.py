@@ -97,7 +97,7 @@ def validate_zip(zfile: Path) -> ValidateInput:
     return validate
 
 
-def interests_to_list(dict_with_interests: dict[Any, Any] | Any) -> list[str]:
+def interests_to_list(dict_with_interests: dict[Any, Any]) -> list[str]:
     """
     This function extracts instagram interests from a dict
     This dict should be obtained from ads_interests.json

@@ -60,7 +60,7 @@ class ValidateInput:
         """
         Compares a list of files to a list of known files.
         From that comparison infer the DDP Category
-        Note: at least 10% percent of known files should match
+        Note: at least 5% percent of known files should match
         """
         prop_category = {}
         for identifier, category in self.ddp_categories_lookup.items():
