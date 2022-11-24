@@ -552,3 +552,113 @@ unzipddp.read_json_from_bytes(json_to_test)
 
 
 
+##############################################
+# Prototype comments
+
+
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "profile_information.json")  
+my_dict = unzipddp.read_json_from_bytes(my_bytes)
+facebook.account_created_at_to_list(my_dict)
+
+###########################################
+# test rewritten read_json_from_file 
+
+from bs4 import BeautifulSoup
+from ddpinspect import unzipddp
+from ddpinspect import youtube
+from ddpinspect import scanfiles
+import logging
+import io
+
+logging.basicConfig(level=logging.DEBUG)
+
+my_zip = "./example_ddps/youtube/takeout-20220921T133717Z-001.zip"
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "my-comments.html")  
+
+youtube.comments_to_df(my_bytes)
+
+import re
+import pandas as pd
+
+def comments_to_df(comments: io.BytesIO) -> pd.DataFrame:
+    """
+    Parse comments from Youtube DDP 
+
+    returns a pd.DataFrame
+    with the comment, type of comment, and a video url
+    """
+
+    data_set = []
+    df = pd.DataFrame()
+
+    video_regex = r"(?P<video_url>^http[s]?://www\.youtube\.com/watch\?v=[a-z,A-Z,0-9,\-,_]+)(?P<rest>$|&.*)"
+    video_pattern = re.compile(video_regex)
+
+    # Big try except block due to lack of time
+    try:
+        soup = BeautifulSoup(comments, "html.parser")
+        items = soup.find_all("li")
+        for item in items:
+            data_point = {}
+
+            # Extract comments
+            content = item.get_text(separator="<SEP>").split("<SEP>")
+            message = content.pop()
+            action = "".join(content)
+            data_point["Comment"] = message
+            data_point["Type of comment"] = action
+
+            # Search through all references
+            # if a video can be found:
+            # 1. extract video url
+            # 2. add data point
+            for ref in item.find_all("a"):
+                regex_result = video_pattern.match(ref.get("href"))
+                if regex_result:
+                    data_point["Video url"] = regex_result.group("video_url")
+                    data_set.append(data_point)
+                    break
+
+        df = pd.DataFrame(data_set)
+
+    except Exception as e:
+        print(e)
+        #logger.error("Exception was caught:  %s", e)
+
+    finally:
+        return df
+
+
+url =  "http://www.youtube.com/watch?v=l3wswFnxhTE&lc=UgxBlYMVwrJxa_E3BFV4AaABAg"
+
+import re
+
+
+
+my_zip = "./example_ddps/youtube/takeout-20220921T133717Z-001.zip"
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "my-comments.html")  
+df1 = youtube.comments_to_df(my_bytes)
+
+my_zip = "./example_ddps/youtube/takeout-20220921T133717Z-001.zip"
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "my-comments.html")  
+df2 = comments_to_df(my_bytes)
+
+for index, row in df1.iterrows():
+    if row["Comment"] not in df2["Comment"].tolist():
+        print("=====================================================")
+        print(index)
+        print(row["Comment"])
+        print(row["Type of comment"])
+        print(row["Context of comment 1"])
+        print(row["Context of comment 2"])
+        print(row["Context of comment 3"])
+
+
+
+
+video_regex = r"(?P<video_url>^http[s]?://www\.youtube\.com/watch\?v=[a-z,A-Z,0-9,-,_]+)(?P<rest>$|&.*)"
+video_pattern = re.compile(video_regex)
+
+video_pattern.match("http://www.youtube.com/watch?v=g-qkhw_u2M8")
+
+

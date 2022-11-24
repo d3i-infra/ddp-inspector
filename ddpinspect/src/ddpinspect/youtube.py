@@ -9,6 +9,7 @@ from typing import Any
 import logging
 import zipfile
 import io
+import re
 
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -132,12 +133,16 @@ def to_df(youtube_list: list[dict[Any, Any]] | Any) -> pd.DataFrame:
 def comments_to_df(comments: io.BytesIO) -> pd.DataFrame:
     """
     Parse comments from Youtube DDP
-    Function can handle any language
-    Note a tradeoff has been made between, having clean data and interpretability for the participant
+
+    returns a pd.DataFrame
+    with the comment, type of comment, and a video url
     """
 
     data_set = []
     df = pd.DataFrame()
+
+    video_regex = r"(?P<video_url>^http[s]?://www\.youtube\.com/watch\?v=[a-z,A-Z,0-9,\-,_]+)(?P<rest>$|&.*)"
+    video_pattern = re.compile(video_regex)
 
     # Big try except block due to lack of time
     try:
@@ -153,13 +158,16 @@ def comments_to_df(comments: io.BytesIO) -> pd.DataFrame:
             data_point["Comment"] = message
             data_point["Type of comment"] = action
 
-            # Extract references
-            for i, ref in enumerate(item.find_all("a")):
-                data_point[f"Context of comment {i + 1}"] = (
-                    ref.text + ": " + ref.get("href")
-                )
-
-            data_set.append(data_point)
+            # Search through all references
+            # if a video can be found:
+            # 1. extract video url
+            # 2. add data point
+            for ref in item.find_all("a"):
+                regex_result = video_pattern.match(ref.get("href"))
+                if regex_result:
+                    data_point["Video url"] = regex_result.group("video_url")
+                    data_set.append(data_point)
+                    break
 
         df = pd.DataFrame(data_set)
 
