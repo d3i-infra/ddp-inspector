@@ -23,7 +23,11 @@ from ddpinspect.validate import (
 )
 from ddpinspect import scanfiles
 
+
 logger = logging.getLogger(__name__)
+
+VIDEO_REGEX = r"(?P<video_url>^http[s]?://www\.youtube\.com/watch\?v=[a-z,A-Z,0-9,\-,_]+)(?P<rest>$|&.*)"
+CHANNEL_REGEX = r"(?P<channel_url>^http[s]?://www\.youtube\.com/channel/[a-z,A-Z,0-9,\-,_]+$)"
 
 DDP_CATEGORIES = [
     DDPCategory(
@@ -63,7 +67,7 @@ DDP_CATEGORIES = [
     ),
     DDPCategory(
         id="html_nl",
-        ddp_filetype=DDPFiletype.JSON,
+        ddp_filetype=DDPFiletype.HTML,
         language=Language.NL,
         known_files=[
             "archive_browser.html",
@@ -140,9 +144,7 @@ def comments_to_df(comments: io.BytesIO) -> pd.DataFrame:
 
     data_set = []
     df = pd.DataFrame()
-
-    video_regex = r"(?P<video_url>^http[s]?://www\.youtube\.com/watch\?v=[a-z,A-Z,0-9,\-,_]+)(?P<rest>$|&.*)"
-    video_pattern = re.compile(video_regex)
+    video_pattern = re.compile(VIDEO_REGEX)
 
     # Big try except block due to lack of time
     try:
@@ -174,5 +176,57 @@ def comments_to_df(comments: io.BytesIO) -> pd.DataFrame:
     except Exception as e:
         logger.error("Exception was caught:  %s", e)
 
+    finally:
+        return df
+
+
+def watch_history_html_to_df(watch_history: io.BytesIO) -> pd.DataFrame:
+    """
+    Extacts the watch history in html format from Youtube DDP
+
+    returns a pd.DataFrame
+    """
+
+    df = pd.DataFrame()
+    data_set = []
+    video_pattern = re.compile(VIDEO_REGEX)
+    channel_pattern = re.compile(CHANNEL_REGEX)
+
+    try:
+        soup = BeautifulSoup(watch_history, "html.parser")
+
+        watch_item_id = "content-cell mdl-cell mdl-cell--6-col mdl-typography--body-1"
+        items = soup.find_all("div", {"class": watch_item_id})
+        for item in items:
+            data_point = {}
+
+            content = item.get_text(separator="<SEP>").split("<SEP>")
+            time = content.pop()
+            data_point["Time"] = time
+
+            for ref in item.find_all("a"):
+                video_regex_result = video_pattern.match(ref.get("href"))
+                channel_regex_result = channel_pattern.match(ref.get("href"))
+
+                if video_regex_result:
+                    data_point["Video title"] = ref.get_text()
+                    data_point["Video url"] = video_regex_result.group("video_url")
+
+                if channel_regex_result:
+                    data_point["Channel title"] = ref.get_text()
+                    data_point["Channel url"] = channel_regex_result.group("channel_url")
+
+                if video_regex_result:
+                    data_set.append(data_point)
+
+        df = pd.DataFrame(data_set)
+
+        try:
+            df = df[['Video title', 'Video url', 'Channel title', 'Channel url', 'Time']]
+        except KeyError as e:
+            logger.info("Column order could not be changed: %s", e)
+
+    except Exception as e:
+        logger.error("Watch history could not be extracted: %s", e)
     finally:
         return df
