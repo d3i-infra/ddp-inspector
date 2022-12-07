@@ -134,6 +134,17 @@ def to_df(youtube_list: list[dict[Any, Any]] | Any) -> pd.DataFrame:
         return df_out
 
 
+def bytes_to_soup(buf: io.BytesIO) -> BeautifulSoup:
+    """
+    Remove undecodable bytes from utf-8 string
+    BeautifulSoup will hang otherwise
+    """
+    utf_8_str = buf.getvalue().decode("utf-8", errors="ignore")
+    utf_8_str = re.sub(r'[^\x00-\x7F]+', ' ', utf_8_str)
+    soup = BeautifulSoup(utf_8_str, "lxml")
+    return soup
+
+
 def comments_to_df(comments: io.BytesIO) -> pd.DataFrame:
     """
     Parse comments from Youtube DDP
@@ -148,7 +159,7 @@ def comments_to_df(comments: io.BytesIO) -> pd.DataFrame:
 
     # Big try except block due to lack of time
     try:
-        soup = BeautifulSoup(comments, "html.parser")
+        soup = bytes_to_soup(comments)
         items = soup.find_all("li")
         for item in items:
             data_point = {}
@@ -193,8 +204,7 @@ def watch_history_html_to_df(watch_history: io.BytesIO) -> pd.DataFrame:
     channel_pattern = re.compile(CHANNEL_REGEX)
 
     try:
-        soup = BeautifulSoup(watch_history, "html.parser")
-
+        soup = bytes_to_soup(watch_history)
         watch_item_id = "content-cell mdl-cell mdl-cell--6-col mdl-typography--body-1"
         items = soup.find_all("div", {"class": watch_item_id})
         for item in items:

@@ -662,3 +662,44 @@ video_pattern = re.compile(video_regex)
 video_pattern.match("http://www.youtube.com/watch?v=g-qkhw_u2M8")
 
 
+##############################################################
+# Extract watch history html
+
+
+from ddpinspect import youtube
+from ddpinspect import unzipddp
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
+my_zip = "./example_ddps/youtube/takeout_youtube_html.zip"
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "kijkgeschiedenis.html")  
+youtube.watch_history_html_to_df(my_bytes)
+
+
+
+##############################################################
+from ddpinspect import youtube
+from ddpinspect import unzipddp
+from bs4 import BeautifulSoup
+import logging
+import io
+
+def remove_non_ascii_1(text):
+    return ''.join(i for i in text if ord(i)<128)
+
+logging.basicConfig(level=logging.DEBUG)
+
+my_zip = "/home/turbo/Downloads/youtube.zip"
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "watch-history.html")  
+check = my_bytes.getvalue().decode("utf-8", errors="ignore")
+check = remove_non_ascii_1(check)
+check
+
+soup = BeautifulSoup(check, "html.parser")
+
+
+my_zip = "/home/turbo/Downloads/youtube.zip"
+my_bytes = unzipddp.extract_file_from_zip(my_zip, "watch-history.html")  
+youtube.watch_history_html_to_df(my_bytes)
+
