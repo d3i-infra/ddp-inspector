@@ -78,13 +78,13 @@ class ValidateInput:
         logger.info("Not a valid input; not enough files matched when performing input validation")
         return False
 
-    def set_status_code(self, code: int):
+    def set_status_code(self, code: int) -> None:
         """
         Set the status code
         """
         self.status_code = self.status_codes_lookup.get(code, None)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         for status_code, ddp_category in zip(self.status_codes, self.ddp_categories):
             assert isinstance(status_code, StatusCode), "Input is not of class StatusCode"
             assert isinstance(ddp_category, DDPCategory), "Input is not of class DDPCategory"
