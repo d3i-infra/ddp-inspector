@@ -95,19 +95,20 @@ def flatten_nested_dict(
     """
 
     object_id = uuid.uuid4().hex
+    parent_id = parent_id + "/" + object_id
     is_ip = is_time = is_url = None
 
     if isinstance(obj, dict):
         obj = dict(sorted(obj.items()))
         object_value = ":".join([str(k) for k in obj.keys()])
         for k, v in obj.items():
-            flatten_nested_dict(obj=v, name=str(k), parent_id=object_id, out=out)
+            flatten_nested_dict(obj=v, name=str(k), parent_id=parent_id, out=out)
 
     elif isinstance(obj, list):
         object_value = "List"
         for index, item in enumerate(obj):
             flatten_nested_dict(
-                obj=item, name=f"{name}_{index}", parent_id=object_id, out=out
+                obj=item, name=f"{name}_{index}", parent_id=parent_id, out=out
             )
 
     elif isinstance(obj, str):
