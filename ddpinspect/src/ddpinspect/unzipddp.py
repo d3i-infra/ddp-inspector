@@ -118,7 +118,7 @@ def _read_json(json_input: Any, json_reader: Callable[[Any, str], Any]) -> dict[
             break
 
         except json.JSONDecodeError:
-            logger.debug("Cannot decode json with encoding: %s", encoding)
+            logger.error("Cannot decode json with encoding: %s", encoding)
         except TypeError as e:
             logger.error("%s, could not convert json bytes", e)
             break
@@ -133,6 +133,8 @@ def read_json_from_bytes(json_bytes: io.BytesIO) -> dict[Any, Any] | list[Any]:
     """
     Reads json from io.BytesIO buffer
     this function is a wrapper around _read_json
+
+    Function returns {} in case of failure
     """
 
     out: dict[Any, Any] | list[Any] = {}
@@ -149,6 +151,8 @@ def read_json_from_file(json_file: str) -> dict[Any, Any] | list[Any]:
     """
     Reads json from file
     this function is a wrapper around _read_json
+
+    Function returns {} in case of failure
     """
     out = _read_json(json_file, _json_reader_file)
     return out
