@@ -3,7 +3,7 @@ Contains functions to deal with zipfiles
 """
 
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 import logging
 import zipfile
 import json
@@ -84,60 +84,73 @@ def extract_file_from_zip(zfile: str, file_to_extract: str) -> io.BytesIO:
         return file_to_extract_bytes
 
 
-def _read_json_from_bytes(json_bytes: io.BytesIO, encoding: str) -> dict[Any, Any] | list[Any]:
-    """
-    Dunder function that converts bytes buffer to a json
-    Performs several checks (see code).
+def _json_reader_bytes(json_bytes: bytes, encoding: str) -> Any:
+    json_bytes_stream = io.BytesIO(json_bytes)
+    stream = io.TextIOWrapper(json_bytes_stream, encoding=encoding)
+    result = json.load(stream)
+    return result
 
-    Swallows all exceptions, except json.JSONDecodeError
 
-    The non-dunder variant tries different encodings
+def _json_reader_file(json_file: str, encoding: str) -> Any:
+    with open(json_file, 'r', encoding=encoding) as f:
+        result = json.load(f)
+    return result
+
+
+def _read_json(json_input: Any, json_reader: Callable[[Any, str], Any]) -> dict[Any, Any] | list[Any]:
     """
+    Dunder function that read json_input and applies json_reader
+    Performs several checks (see code) and tries different encodings
+    """
+
     out: dict[Any, Any] | list[Any] = {}
 
-    try:
-        stream = io.TextIOWrapper(json_bytes, encoding=encoding)
-        result = json.load(stream)
+    encodings = ["utf8", "utf-8-sig"]
+    for encoding in encodings:
+        try:
+            result = json_reader(json_input, encoding)
 
-        if not isinstance(result, (dict, list)):
-            raise TypeError("Did not convert bytes to a list or dict, but to another type instead")
+            if not isinstance(result, (dict, list)):
+                raise TypeError("Did not convert bytes to a list or dict, but to another type instead")
 
-        out = result
-        logger.debug("Succesfully converted json bytes with encoding: %s", encoding)
+            out = result
+            logger.debug("Succesfully converted json bytes with encoding: %s", encoding)
+            break
 
-    except json.JSONDecodeError:
-        logger.debug("Cannot decode json with encoding: %s", encoding)
-        raise
-    except TypeError as e:
-        logger.error("%s, could not convert json bytes", e)
-    except Exception as e:
-        logger.error("%s, could not convert json bytes", e)
+        except json.JSONDecodeError:
+            logger.debug("Cannot decode json with encoding: %s", encoding)
+        except TypeError as e:
+            logger.error("%s, could not convert json bytes", e)
+            break
+        except Exception as e:
+            logger.error("%s, could not convert json bytes", e)
+            break
 
     return out
 
 
 def read_json_from_bytes(json_bytes: io.BytesIO) -> dict[Any, Any] | list[Any]:
     """
-    Reads json from bytes buffer, if succesful it returns the result from json.load()
-
-    Tries several encodings in sequence.
-    In case of exceptions returns empty dict.
-    Is case json.load() converted to something other than dict or list return empty dict
+    Reads json from io.BytesIO buffer
+    this function is a wrapper around _read_json
     """
 
     out: dict[Any, Any] | list[Any] = {}
+    try:
+        b = json_bytes.read()
+        out = _read_json(b, _json_reader_bytes)
+    except Exception as e:
+        logger.error("%s, could not convert json bytes", e)
 
-    # Stream might need to be reopened again after a failed read
-    b = json_bytes.read()
+    return out
 
-    encodings = ["utf8", "utf-8-sig"]
-    for encoding in encodings:
-        try:
-            out = _read_json_from_bytes(io.BytesIO(b), encoding=encoding)
-            break
-        except json.JSONDecodeError:
-            pass
 
+def read_json_from_file(json_file: str) -> dict[Any, Any] | list[Any]:
+    """
+    Reads json from file
+    this function is a wrapper around _read_json
+    """
+    out = _read_json(json_file, _json_reader_file)
     return out
 
 
